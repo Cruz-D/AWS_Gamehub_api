@@ -2,7 +2,7 @@
 using System;
 using gamehub_API.Models;
 
-namespace gamehub_API.DbContext
+namespace gamehub_API.DbContext.NewFolder
 {
     public class LocalDbContext : Microsoft.EntityFrameworkCore.DbContext
     {

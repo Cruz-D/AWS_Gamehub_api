@@ -1,5 +1,4 @@
-
-using gamehub_API.DbContext;
+using gamehub_API.DbContext.NewFolder;
 using Microsoft.EntityFrameworkCore;
 
 namespace gamehub_API
@@ -13,6 +12,18 @@ namespace gamehub_API
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            // ADD CORS POLICY
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowAllOrigins",
+                    builder =>
+                    {
+                        builder.AllowAnyOrigin()
+                               .AllowAnyMethod()
+                               .AllowAnyHeader();
+                    });
+            });
 
             // ADD LOCAL DB CONTEXT
             builder.Services.AddDbContext<LocalDbContext>(options =>
