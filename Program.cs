@@ -1,4 +1,7 @@
 
+using gamehub_API.DbContext;
+using Microsoft.EntityFrameworkCore;
+
 namespace gamehub_API
 {
     public class Program
@@ -10,6 +13,11 @@ namespace gamehub_API
             // Add services to the container.
 
             builder.Services.AddControllers();
+
+            // ADD LOCAL DB CONTEXT
+            builder.Services.AddDbContext<LocalDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("LocalDbConnection")));
+
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
