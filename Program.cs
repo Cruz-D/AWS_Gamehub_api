@@ -1,4 +1,7 @@
+using gamehub_API.Application.Interfaces;
+using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
 using gamehub_API.DbContext.NewFolder;
+using gamehub_API.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace gamehub_API
@@ -9,46 +12,59 @@ namespace gamehub_API
         {
             var builder = WebApplication.CreateBuilder(args);
 
-            // Add services to the container.
+            // ============================================
+            // CONFIGURACIÓN DE SERVICIOS
+            // ============================================
 
+            // Agregar controladores al contenedor
             builder.Services.AddControllers();
 
-            // ADD CORS POLICY
+            // Configurar el contexto de base de datos (LocalDbContext)
+            builder.Services.AddDbContext<LocalDbContext>(options =>
+                options.UseSqlServer(builder.Configuration.GetConnectionString("AzureSQLConnection"))); // AzureSQLConnection LocalDbConnection
+
+            // Configurar política de CORS
             builder.Services.AddCors(options =>
             {
-                options.AddPolicy("AllowAllOrigins",
-                    builder =>
-                    {
-                        builder.AllowAnyOrigin()
-                               .AllowAnyMethod()
-                               .AllowAnyHeader();
-                    });
+                options.AddPolicy("AllowAllOrigins", policyBuilder =>
+                {
+                    policyBuilder.AllowAnyOrigin()
+                                 .AllowAnyMethod()
+                                 .AllowAnyHeader();
+                });
             });
 
-            // ADD LOCAL DB CONTEXT
-            builder.Services.AddDbContext<LocalDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("LocalDbConnection")));
+            // Registrar repositorios
+            builder.Services.AddScoped<IVideogameRepository, VideogameRepository>();
 
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+            // Registrar casos de uso
+            builder.Services.AddScoped<IGetAllVideogamesUseCase, GetAllVideogamesUseCase>();
+
+            // Configurar Swagger/OpenAPI
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
 
+            // ============================================
+            // CONFIGURACIÓN DE LA APLICACIÓN
+            // ============================================
+
             var app = builder.Build();
 
-            // Configure the HTTP request pipeline.
+            // Configurar el pipeline de solicitudes HTTP
             if (app.Environment.IsDevelopment())
             {
+                // Habilitar Swagger en entorno de desarrollo
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
 
-            app.UseHttpsRedirection();
+            app.UseHttpsRedirection(); // Redirección a HTTPS
+            app.UseAuthorization();   // Configuración de autorización
 
-            app.UseAuthorization();
-
-
+            // Mapear controladores
             app.MapControllers();
 
+            // Ejecutar la aplicación
             app.Run();
         }
     }

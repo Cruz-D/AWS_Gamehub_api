@@ -25,7 +25,6 @@
   <ItemGroup>
     <Folder Include="Application\DTO\User\" />
     <Folder Include="Application\DTO\Videogame\" />
-    <Folder Include="Application\UseCases\Videogame\" />
     <Folder Include="Application\UseCases\User\" />
   </ItemGroup>
 

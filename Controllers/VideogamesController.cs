@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using gamehub_API.Models;
 using gamehub_API.DbContext.NewFolder;
+using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
 
 namespace gamehub_API.Controllers
 {
@@ -16,16 +17,29 @@ namespace gamehub_API.Controllers
     {
         private readonly LocalDbContext _context;
 
-        public VideogamesController(LocalDbContext context)
+        private readonly IGetAllVideogamesUseCase _getAllVideogames;
+
+        public VideogamesController
+            (
+
+            LocalDbContext context, 
+            IGetAllVideogamesUseCase getAllVideogames
+
+            )
         {
             _context = context;
+            _getAllVideogames = getAllVideogames;
+
         }
 
         // GET: api/Videogames
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Videogame>>> GetVideogames()
-        {
-            return await _context.Videogames.ToListAsync();
+        public async Task<IActionResult> GetVideogames()
+        { 
+            Console.WriteLine("1 GetVideogames called");
+            var videogames = await _getAllVideogames.ExecuteAsync();
+
+            return Ok(videogames);
         }
 
         // GET: api/Videogames/5
