@@ -4,10 +4,11 @@ namespace gamehub_API.Application.Interfaces
 {
     public interface IVideogameRepository
     {
-        Task<IEnumerable<Videogame>> GetAllVideogamesAsync();
-        Task<Videogame> GetVideogameByIdAsync(int id);
-        Task AddVideogameAsync(Videogame videogame);
-        Task UpdateVideogameAsync(Videogame videogame);
-        Task DeleteVideogameAsync(int id);
+        // GET
+        Task<List<Videogame>> GetAllVideogamesAsync(string sqlCosmosQuery);
+
+        // GET/ID
+        Task<Videogame> GetVideogameByIdAsync(string id);
+
     }
 }

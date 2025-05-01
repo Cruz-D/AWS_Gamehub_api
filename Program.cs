@@ -1,8 +1,8 @@
 using gamehub_API.Application.Interfaces;
 using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
-using gamehub_API.DbContext.NewFolder;
+using gamehub_API.Application.UseCases.Videogame.GetVideogameUseCase;
 using gamehub_API.Infrastructure.Repositories;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Azure.Cosmos;
 
 namespace gamehub_API
 {
@@ -19,10 +19,6 @@ namespace gamehub_API
             // Agregar controladores al contenedor
             builder.Services.AddControllers();
 
-            // Configurar el contexto de base de datos (LocalDbContext)
-            builder.Services.AddDbContext<LocalDbContext>(options =>
-                options.UseSqlServer(builder.Configuration.GetConnectionString("AzureSQLConnection"))); // AzureSQLConnection LocalDbConnection
-
             // Configurar política de CORS
             builder.Services.AddCors(options =>
             {
@@ -34,11 +30,39 @@ namespace gamehub_API
                 });
             });
 
-            // Registrar repositorios
-            builder.Services.AddScoped<IVideogameRepository, VideogameRepository>();
+            // Configurar CosmosClient como Singleton
+            builder.Services.AddSingleton(options =>
+            {
+                string endpointUri = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("EndpointUri")!;
+                string primaryKey = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("PrimaryKey")!;
 
+                // Crear una instancia de CosmosClient con las opciones de conexión
+                return new CosmosClient(endpointUri, primaryKey, new CosmosClientOptions
+                {
+                    // Configurar el modo de conexión a la base de datos a Gateway
+                    // es decir, a través de HTTP o HTTPS en lugar de TCP 
+                    ConnectionMode = ConnectionMode.Gateway
+                });
+            });
+
+            //---------------------------------------------
+            // Registrar Repositorios
+            //---------------------------------------------
+            builder.Services.AddScoped<IVideogameRepository>(provider =>
+            {
+                // Obtener el cosmosClient generado anteriormente
+                var cosmosClient = provider.GetRequiredService<CosmosClient>();
+                string databaseName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("DatabaseName")!;
+                string containerName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("VideogamesContainer")!;
+
+                return new VideogameRepository(cosmosClient, databaseName, containerName);
+            });
+
+            //---------------------------------------------
             // Registrar casos de uso
+            //---------------------------------------------
             builder.Services.AddScoped<IGetAllVideogamesUseCase, GetAllVideogamesUseCase>();
+            builder.Services.AddScoped<IGetVideogameUseCase, GetVideogameUseCase>();
 
             // Configurar Swagger/OpenAPI
             builder.Services.AddEndpointsApiExplorer();
@@ -51,9 +75,9 @@ namespace gamehub_API
             var app = builder.Build();
 
             // Configurar el pipeline de solicitudes HTTP
-            if (app.Environment.IsDevelopment())
+            if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
             {
-                // Habilitar Swagger en entorno de desarrollo
+                // Habilitar Swagger en desarrollo y producción
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }

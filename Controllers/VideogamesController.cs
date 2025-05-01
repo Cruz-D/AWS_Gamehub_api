@@ -4,10 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using gamehub_API.Models;
-using gamehub_API.DbContext.NewFolder;
 using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
+using gamehub_API.Application.UseCases.Videogame.GetVideogameUseCase;
 
 namespace gamehub_API.Controllers
 {
@@ -15,21 +14,19 @@ namespace gamehub_API.Controllers
     [ApiController]
     public class VideogamesController : ControllerBase
     {
-        private readonly LocalDbContext _context;
+
 
         private readonly IGetAllVideogamesUseCase _getAllVideogames;
+        private readonly IGetVideogameUseCase _getVideogameUseCase;
 
         public VideogamesController
             (
-
-            LocalDbContext context, 
-            IGetAllVideogamesUseCase getAllVideogames
-
+            IGetAllVideogamesUseCase getAllVideogames,
+            IGetVideogameUseCase getVideogameUseCase
             )
         {
-            _context = context;
             _getAllVideogames = getAllVideogames;
-
+            _getVideogameUseCase = getVideogameUseCase;
         }
 
         // GET: api/Videogames
@@ -44,9 +41,10 @@ namespace gamehub_API.Controllers
 
         // GET: api/Videogames/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Videogame>> GetVideogame(int id)
+        public async Task<ActionResult<Videogame>> GetVideogame(string id)
         {
-            var videogame = await _context.Videogames.FindAsync(id);
+            Console.WriteLine("GetVideogame called with id: " + id);
+            var videogame = await _getVideogameUseCase.ExecuteAsync(id);
 
             if (videogame == null)
             {
@@ -54,69 +52,7 @@ namespace gamehub_API.Controllers
             }
 
             return videogame;
-        }
-
-        // PUT: api/Videogames/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutVideogame(int id, Videogame videogame)
-        {
-            if (id != videogame.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(videogame).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!VideogameExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Videogames
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPost]
-        public async Task<ActionResult<Videogame>> PostVideogame(Videogame videogame)
-        {
-            _context.Videogames.Add(videogame);
-            await _context.SaveChangesAsync();
-
-            return CreatedAtAction("GetVideogame", new { id = videogame.Id }, videogame);
-        }
-
-        // DELETE: api/Videogames/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteVideogame(int id)
-        {
-            var videogame = await _context.Videogames.FindAsync(id);
-            if (videogame == null)
-            {
-                return NotFound();
-            }
-
-            _context.Videogames.Remove(videogame);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
-        }
-
-        private bool VideogameExists(int id)
-        {
-            return _context.Videogames.Any(e => e.Id == id);
+            
         }
     }
 }
