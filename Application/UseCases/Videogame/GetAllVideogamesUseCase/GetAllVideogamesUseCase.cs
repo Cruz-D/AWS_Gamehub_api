@@ -12,10 +12,15 @@ namespace gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase
             _videogameRepository = videogameRepository;
         }
 
-        public Task<IEnumerable<Models.Videogame>> ExecuteAsync()
-        { 
+        public async Task<IEnumerable<Models.Videogame>> ExecuteAsync()
+        {
             Console.WriteLine("2 GetAllVideogamesUseCase: Executing use case to get all videogames.");
-            return _videogameRepository.GetAllVideogamesAsync();
+
+            // Call the repository to get all videogames
+
+            string sqlCosmosQuery = "SELECT * FROM c";
+            return _videogameRepository.GetAllVideogamesAsync(sqlCosmosQuery).Result;
         }
+
     }
 }

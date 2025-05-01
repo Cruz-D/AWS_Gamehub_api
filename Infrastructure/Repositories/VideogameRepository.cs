@@ -1,44 +1,72 @@
 ﻿using gamehub_API.Application.Interfaces;
-using gamehub_API.DbContext.NewFolder;
+
 using gamehub_API.Models;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Azure.Cosmos;
 
 namespace gamehub_API.Infrastructure.Repositories
 {
     public class VideogameRepository : IVideogameRepository
     {
-        private readonly LocalDbContext _dbContext;
+        //Instanciar el contenedor de Cosmos DB
+        private readonly Container _container;
 
-        public VideogameRepository(LocalDbContext dbContext)
+        //Constructor que recibe el cliente de Cosmos DB, el nombre de la base de datos y el nombre del contenedor
+        public VideogameRepository(CosmosClient cosmosClient, string databaseName, string containerName)
         {
-            _dbContext = dbContext;
+            _container = cosmosClient.GetContainer(databaseName, containerName);
         }
 
-        public Task AddVideogameAsync(Videogame videogame)
+        public async Task<List<Videogame>> GetAllVideogamesAsync(string sqlCosmosQuery)
         {
-            throw new NotImplementedException();
+            try
+            {
+                //Ejecutar la consulta SQL en Cosmos DB
+                var result = await _container.GetItemQueryIterator<Videogame>(new QueryDefinition(sqlCosmosQuery)).ReadNextAsync();
+
+                //Devolver la lista de videojuegos
+                return result.ToList();
+
+            }
+            catch (CosmosException ex)
+            {
+                // Manejar errores específicos de Cosmos DB
+                throw new Exception($"\n Error en Cosmos DB: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                // Manejar otros errores
+                throw new Exception($"\n Error inesperado: {ex.Message}", ex);
+            }
+
         }
 
-        public Task DeleteVideogameAsync(int id)
+        public async Task<Videogame> GetVideogameByIdAsync(string id)
         {
-            throw new NotImplementedException();
+            try
+            {
+                //Ejecutar la consulta de cosmos
+                var result = await _container.GetItemQueryIterator<Videogame>(new QueryDefinition("SELECT * FROM c WHERE c.id = @id")
+                    .WithParameter("@id", id)).ReadNextAsync();
+
+                //Devolver el videojuego encontrado
+                if (result.Count == 0)
+                {
+                    throw new Exception($"\n No se encontró el videojuego con id: {id}");
+                }
+                return result.FirstOrDefault()!;
+            }
+            catch (CosmosException ex)
+            {
+                // Manejar errores específicos de Cosmos DB
+                throw new Exception($"\n Error en Cosmos DB: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                // Manejar otros errores
+                throw new Exception($"\n Error inesperado: {ex.Message}", ex);
+            }
         }
 
-        public async Task<IEnumerable<Videogame>> GetAllVideogamesAsync()
-        {
-            Console.WriteLine("3 VideogameRepository: Getting all videogames from the database.");
-            return await _dbContext.Videogames.ToListAsync();
-        }
-
-        public Task<Videogame> GetVideogameByIdAsync(int id)
-        {
-            throw new NotImplementedException();
-        }
-
-        public Task UpdateVideogameAsync(Videogame videogame)
-        {
-            throw new NotImplementedException();
-        }
     }
 
 }
