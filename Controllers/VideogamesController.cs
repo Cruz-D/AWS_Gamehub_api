@@ -4,9 +4,9 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using gamehub_API.Models;
 using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
 using gamehub_API.Application.UseCases.Videogame.GetVideogameUseCase;
+using gamehub_API.Infrastructure.Models;
 
 namespace gamehub_API.Controllers
 {

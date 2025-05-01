@@ -1,5 +1,5 @@
 ﻿using gamehub_API.Application.Interfaces;
-using gamehub_API.Models;
+using gamehub_API.Infrastructure.Models;
 
 namespace gamehub_API.Infrastructure.Repositories
 {

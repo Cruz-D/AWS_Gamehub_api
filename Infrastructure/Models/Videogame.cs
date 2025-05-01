@@ -1,7 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.ComponentModel.DataAnnotations;
 
-namespace gamehub_API.Models
+namespace gamehub_API.Infrastructure.Models
 {
     public class Videogame
     {
@@ -32,6 +32,6 @@ namespace gamehub_API.Models
         [JsonProperty(PropertyName = "image")]
         public string Image { get; set; }
 
-   
+
     }
 }

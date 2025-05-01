@@ -12,7 +12,7 @@ namespace gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase
             _videogameRepository = videogameRepository;
         }
 
-        public async Task<IEnumerable<Models.Videogame>> ExecuteAsync()
+        public async Task<IEnumerable<Infrastructure.Models.Videogame>> ExecuteAsync()
         {
             Console.WriteLine("2 GetAllVideogamesUseCase: Executing use case to get all videogames.");
 

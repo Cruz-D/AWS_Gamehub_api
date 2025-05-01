@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace gamehub_API.Models
+namespace gamehub_API.Infrastructure.Models
 {
     public class User
     {
