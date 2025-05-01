@@ -10,7 +10,7 @@ namespace gamehub_API.Application.UseCases.Videogame.GetVideogameUseCase
         {
             _videogameRepository = videogameRepository;
         }
-        public async Task<Models.Videogame> ExecuteAsync(string id)
+        public async Task<Infrastructure.Models.Videogame> ExecuteAsync(string id)
         {
             var videogame = await _videogameRepository.GetVideogameByIdAsync(id);
             return videogame;

@@ -1,6 +1,6 @@
 ﻿using gamehub_API.Application.Interfaces;
-
-using gamehub_API.Models;
+using gamehub_API.Infrastructure.Models;
+using gamehub_API.Infrastructure.Services.ServiceBus;
 using Microsoft.Azure.Cosmos;
 
 namespace gamehub_API.Infrastructure.Repositories
@@ -10,10 +10,17 @@ namespace gamehub_API.Infrastructure.Repositories
         //Instanciar el contenedor de Cosmos DB
         private readonly Container _container;
 
+        private readonly IBusServices? _busServices;
+
         //Constructor que recibe el cliente de Cosmos DB, el nombre de la base de datos y el nombre del contenedor
-        public VideogameRepository(CosmosClient cosmosClient, string databaseName, string containerName)
+        public VideogameRepository(
+            CosmosClient cosmosClient, 
+            string databaseName, 
+            string containerName,
+            BusServices busServices)
         {
             _container = cosmosClient.GetContainer(databaseName, containerName);
+            _busServices = busServices;
         }
 
         public async Task<List<Videogame>> GetAllVideogamesAsync(string sqlCosmosQuery)
@@ -47,6 +54,9 @@ namespace gamehub_API.Infrastructure.Repositories
                 //Ejecutar la consulta de cosmos
                 var result = await _container.GetItemQueryIterator<Videogame>(new QueryDefinition("SELECT * FROM c WHERE c.id = @id")
                     .WithParameter("@id", id)).ReadNextAsync();
+
+                await _busServices!.SendMessageAsync("videogames-queue", $"Se ha solicitado el videojuego con id: {id}");
+
 
                 //Devolver el videojuego encontrado
                 if (result.Count == 0)

@@ -1,7 +1,9 @@
+using Azure.Messaging.ServiceBus;
 using gamehub_API.Application.Interfaces;
 using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
 using gamehub_API.Application.UseCases.Videogame.GetVideogameUseCase;
 using gamehub_API.Infrastructure.Repositories;
+using gamehub_API.Infrastructure.Services.ServiceBus;
 using Microsoft.Azure.Cosmos;
 
 namespace gamehub_API
@@ -30,6 +32,13 @@ namespace gamehub_API
                 });
             });
 
+            // Configurar Service Bus
+            string serviceBusConnectionString = builder.Configuration!.GetValue<string>("ServiceBus:ConnectionString")!;
+            builder.Services.AddSingleton(serviceProvider =>
+            {
+                return new ServiceBusClient(serviceBusConnectionString);
+            });
+
             // Configurar CosmosClient como Singleton
             builder.Services.AddSingleton(options =>
             {
@@ -55,7 +64,10 @@ namespace gamehub_API
                 string databaseName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("DatabaseName")!;
                 string containerName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("VideogamesContainer")!;
 
-                return new VideogameRepository(cosmosClient, databaseName, containerName);
+                // Obtener el busServices generado anteriormente
+                var busServices = provider.GetRequiredService<BusServices>();
+
+                return new VideogameRepository(cosmosClient, databaseName, containerName, busServices);
             });
 
             //---------------------------------------------
@@ -63,6 +75,11 @@ namespace gamehub_API
             //---------------------------------------------
             builder.Services.AddScoped<IGetAllVideogamesUseCase, GetAllVideogamesUseCase>();
             builder.Services.AddScoped<IGetVideogameUseCase, GetVideogameUseCase>();
+
+            //---------------------------------------------
+            // Registrar servicios
+            //---------------------------------------------
+            builder.Services.AddScoped<IBusServices, BusServices>();
 
             // Configurar Swagger/OpenAPI
             builder.Services.AddEndpointsApiExplorer();
