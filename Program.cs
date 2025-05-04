@@ -1,5 +1,9 @@
 using Azure.Messaging.ServiceBus;
 using gamehub_API.Application.Interfaces;
+using gamehub_API.Application.UseCases.User.CreateUserUseCase;
+using gamehub_API.Application.UseCases.User.DeleteUserUseCase;
+using gamehub_API.Application.UseCases.User.EditUserUseCase;
+using gamehub_API.Application.UseCases.User.ViewUserUseCase;
 using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
 using gamehub_API.Application.UseCases.Videogame.GetVideogameUseCase;
 using gamehub_API.Infrastructure.Repositories;
@@ -32,7 +36,7 @@ namespace gamehub_API
                 });
             });
 
-            // Configurar Service Bus
+            // Configurar Service Bus como Singleton
             string serviceBusConnectionString = builder.Configuration!.GetValue<string>("ServiceBus:ConnectionString")!;
             builder.Services.AddSingleton(serviceProvider =>
             {
@@ -57,7 +61,7 @@ namespace gamehub_API
             //---------------------------------------------
             // Registrar Repositorios
             //---------------------------------------------
-            builder.Services.AddScoped<IVideogameRepository>(provider =>
+            builder.Services.AddScoped<IVideogameInterface>(provider =>
             {
                 // Obtener el cosmosClient generado anteriormente
                 var cosmosClient = provider.GetRequiredService<CosmosClient>();
@@ -70,16 +74,36 @@ namespace gamehub_API
                 return new VideogameRepository(cosmosClient, databaseName, containerName, busServices);
             });
 
+            builder.Services.AddScoped<IUserInterface>(provider =>
+            {
+                // Obtener el cosmosClient generado anteriormente
+                var cosmosClient = provider.GetRequiredService<CosmosClient>();
+                string databaseName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("DatabaseName")!;
+                string containerName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("UserContainer")!;
+
+                // Obtener el busServices generado anteriormente
+                var busServices = provider.GetRequiredService<BusServices>();
+
+                return new UserRepository(cosmosClient, databaseName, containerName, busServices!);
+            });
+
+
             //---------------------------------------------
             // Registrar casos de uso
             //---------------------------------------------
             builder.Services.AddScoped<IGetAllVideogamesUseCase, GetAllVideogamesUseCase>();
             builder.Services.AddScoped<IGetVideogameUseCase, GetVideogameUseCase>();
 
+            builder.Services.AddScoped<ICreateUserUseCase, CreateUserUseCase>();
+            builder.Services.AddScoped<IGetUserUseCase, GetUserUseCase>();
+            builder.Services.AddScoped<IUpdateUserUseCase, UpdateUserUseCase>();
+            builder.Services.AddScoped<IDeleteUserUseCase, DeleteUserUseCase>();
+
             //---------------------------------------------
             // Registrar servicios
             //---------------------------------------------
-            builder.Services.AddScoped<IBusServices, BusServices>();
+            builder.Services.AddScoped<BusServices>();
+            builder.Services.AddScoped<IBusInterface, BusServices>();
 
             // Configurar Swagger/OpenAPI
             builder.Services.AddEndpointsApiExplorer();

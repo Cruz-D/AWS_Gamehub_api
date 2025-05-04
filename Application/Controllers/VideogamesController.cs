@@ -8,7 +8,7 @@ using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
 using gamehub_API.Application.UseCases.Videogame.GetVideogameUseCase;
 using gamehub_API.Infrastructure.Models;
 
-namespace gamehub_API.Controllers
+namespace gamehub_API.Application.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -32,7 +32,7 @@ namespace gamehub_API.Controllers
         // GET: api/Videogames
         [HttpGet]
         public async Task<IActionResult> GetVideogames()
-        { 
+        {
             Console.WriteLine("1 GetVideogames called");
             var videogames = await _getAllVideogames.ExecuteAsync();
 
@@ -52,7 +52,7 @@ namespace gamehub_API.Controllers
             }
 
             return videogame;
-            
+
         }
     }
 }

@@ -1,13 +1,14 @@
 ﻿
 using gamehub_API.Application.Interfaces;
+using gamehub_API.Infrastructure.Models;
 
 namespace gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase
 {
     public class GetAllVideogamesUseCase : IGetAllVideogamesUseCase
     {
-        private readonly IVideogameRepository _videogameRepository;
+        private readonly IVideogameInterface _videogameRepository;
 
-        public GetAllVideogamesUseCase(IVideogameRepository videogameRepository)
+        public GetAllVideogamesUseCase(IVideogameInterface videogameRepository)
         {
             _videogameRepository = videogameRepository;
         }
@@ -19,7 +20,14 @@ namespace gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase
             // Call the repository to get all videogames
 
             string sqlCosmosQuery = "SELECT * FROM c";
-            return _videogameRepository.GetAllVideogamesAsync(sqlCosmosQuery).Result;
+
+            var videogames = await _videogameRepository.GetAllVideogamesAsync(sqlCosmosQuery);
+
+            // TODO: MAPEAR A DTO
+
+            // Return the list of videogames
+            return videogames;
+
         }
 
     }

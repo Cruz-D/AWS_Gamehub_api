@@ -1,8 +1,9 @@
 ﻿using Azure.Messaging.ServiceBus;
+using gamehub_API.Application.Interfaces;
 
 namespace gamehub_API.Infrastructure.Services.ServiceBus
 {
-    public class BusServices : IBusServices
+    public class BusServices : IBusInterface
     {
         // Inyección de dependencias para el cliente de Service Bus
         private readonly ServiceBusClient _serviceBusClient;

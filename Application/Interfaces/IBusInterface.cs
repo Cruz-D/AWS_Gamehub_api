@@ -1,8 +1,8 @@
 using System.Threading.Tasks;
 
-namespace gamehub_API.Infrastructure.Services.ServiceBus
+namespace gamehub_API.Application.Interfaces
 {
-    public interface IBusServices
+    public interface IBusInterface
     {
         Task SendMessageAsync(string queueName, string message);
     }
