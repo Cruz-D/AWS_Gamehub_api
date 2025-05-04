@@ -19,12 +19,12 @@ namespace gamehub_API.Application.UseCases.User.ViewUserUseCase
             return new GetUserDTO
             {
                 id = getUser.id,
-                username = getUser.username,
-                email = getUser.email,
-                firstName = getUser.firstName,
-                lastName = getUser.lastName,
-                dateOfBirth = getUser.dateOfBirth,
-                role = getUser.role,
+                username = getUser.systemInfo.username,
+                email = getUser.systemInfo.email,
+                firstName = getUser.personalInfo.firstName,
+                lastName = getUser.personalInfo.lastName,
+                dateOfBirth = getUser.personalInfo.dateOfBirth,
+                role = getUser.systemInfo.role,
                 //createdAt = DateTime.UtcNow.ToString("o"), // Example value  
                 //lastLogin = null // Example value  
             };

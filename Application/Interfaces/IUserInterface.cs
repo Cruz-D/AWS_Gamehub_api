@@ -4,6 +4,7 @@ namespace gamehub_API.Application.Interfaces
 {
     public interface IUserInterface
     {
+        Task<Users> LoginUserAsync(string username, string password);
         Task<Users> GetUserByIdAsync(string userId);
         Task<Users> AddUserAsync(Users user);
         Task<Users> UpdateUserAsync(Users user);

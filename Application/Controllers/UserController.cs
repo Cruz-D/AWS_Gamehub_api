@@ -6,6 +6,8 @@ using gamehub_API.Application.UseCases.User.UpdatePasswordUseCase;
 using gamehub_API.Application.UseCases.User.EditUserUseCase;
 using gamehub_API.Application.UseCases.User.ViewUserUseCase;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using gamehub_API.Application.UseCases.User.LoginUserUseCase;
 
 namespace gamehub_API.Application.Controllers
 {
@@ -18,19 +20,22 @@ namespace gamehub_API.Application.Controllers
         private readonly IUpdateUserUseCase _updateUserUseCase;
         private readonly IUpdatePasswordUserUseCase _updatePasswordUserUseCase;
         private readonly IDeleteUserUseCase _deleteUserUseCase;
+        private readonly ILoginUserUseCase _loginUserUseCase;
 
         public UserController(
             ICreateUserUseCase createUserUseCase,
             IGetUserUseCase viewUserUseCase,
             IUpdateUserUseCase updateUserUseCase,
             IDeleteUserUseCase deleteUserUseCase,
-            IUpdatePasswordUserUseCase updatePasswordUserUseCase)
+            IUpdatePasswordUserUseCase updatePasswordUserUseCase,
+            ILoginUserUseCase loginUserUseCase)
         {
             _createUserUseCase = createUserUseCase;
             _viewUserUseCase = viewUserUseCase;
             _updateUserUseCase = updateUserUseCase;
             _deleteUserUseCase = deleteUserUseCase;
             _updatePasswordUserUseCase = updatePasswordUserUseCase;
+            _loginUserUseCase = loginUserUseCase;
         }
 
         [HttpGet("{userId}")]
@@ -48,17 +53,32 @@ namespace gamehub_API.Application.Controllers
             }
         }
 
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginUserDTO loginUserDTO)
+        {
+            try
+            {
+                var loginResponse = await _loginUserUseCase.ExecuteAsync(loginUserDTO);
+
+                return Ok(loginResponse);
+            }
+            catch (Exception ex)
+            {
+                return Unauthorized(new { message = ex.Message });
+            }
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateUserDTO createUserDTO)
         {
             try
             {
-                await _createUserUseCase.ExecuteAsync(createUserDTO);
-                return CreatedAtAction(nameof(Get), new { userId = createUserDTO.userId }, createUserDTO);
+                var createUser = await _createUserUseCase.ExecuteAsync(createUserDTO);
+                return CreatedAtAction(nameof(Get), new { createUser.userId }, createUser);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Error al crear el usuario.", details = ex.Message });
+                return StatusCode(500, new { message = "Error al crear el usuario.", details = ex.Message, StackTrace = ex.StackTrace });
             }
         }
 

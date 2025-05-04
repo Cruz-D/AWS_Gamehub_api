@@ -26,7 +26,7 @@ namespace gamehub_API.Application.UseCases.User.UpdatePasswordUseCase
             var existingUser = _userInterface.GetUserByIdAsync(changePasswordDTO.userId).Result;
 
             // Verificar la contraseña actual
-            var isPasswordValid = _passwordHasher.VerifyPassword(changePasswordDTO.oldPassword, existingUser.password);
+            var isPasswordValid = _passwordHasher.VerifyPassword(changePasswordDTO.oldPassword, existingUser.systemInfo.password);
 
             if (!isPasswordValid)
             {
@@ -37,7 +37,7 @@ namespace gamehub_API.Application.UseCases.User.UpdatePasswordUseCase
             var newHashedPassword = _passwordHasher.HashPassword(changePasswordDTO.newPassword);
 
             // Actualizar el hash en el documento del usuario
-            existingUser.password = newHashedPassword;
+            existingUser.systemInfo.password = newHashedPassword;
 
             // Guardar el usuario actualizado en CosmosDB
             var updatedUser = _userInterface.UpdateUserAsync(existingUser).Result;

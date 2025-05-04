@@ -20,6 +20,13 @@ public struct GetUserDTO
     [JsonPropertyName("lastName")]
     public string lastName { get; set; }
 
+    [JsonPropertyName("profilePictureUrl")]
+    public string? profilePictureUrl { get; set; }
+
+    [JsonPropertyName("isVerified")]
+    public bool? isVerified { get; set; }
+
+
     [JsonPropertyName("dateOfBirth")]
     public string? dateOfBirth { get; set; }
 

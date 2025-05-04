@@ -7,8 +7,8 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
     public class CreateUserUseCase : ICreateUserUseCase
     {
         private readonly IUserInterface _userInterface;
-        private readonly IPasswordHasher _passwordHasher; 
-        private readonly IIdGenerator _idGenerator; 
+        private readonly IPasswordHasher _passwordHasher;
+        private readonly IIdGenerator _idGenerator;
 
         public CreateUserUseCase(IUserInterface userInterface, IPasswordHasher passwordHasher, IIdGenerator idGenerator)
         {
@@ -22,36 +22,74 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
             // Validar los datos de entrada
             ValidateCreateUserDTO(createUserDTO);
 
-            // Crear el modelo de usuario
+            // Crear el modelo de usuario  
             var user = new Users
             {
-                id = _idGenerator.GenerateId(), // Generar un ID único
-                userId = _idGenerator.GenerateId(), // Generar un userId único
-                username = createUserDTO.username,
-                email = createUserDTO.email,
-                password = _passwordHasher.HashPassword(createUserDTO.password), // Hashear la contraseña
-                firstName = createUserDTO.firstName,
-                lastName = createUserDTO.lastName,
-                dateOfBirth = createUserDTO.dateOfBirth,
-                role = createUserDTO.role,
+                id = _idGenerator.GenerateId(),
+                userId = _idGenerator.GenerateId(),
+
+                systemInfo = new SystemInfo
+                {
+                    username = createUserDTO.username,
+                    password = _passwordHasher.HashPassword(createUserDTO.password),
+                    email = createUserDTO.email,
+                    role = "user"
+                },
+                personalInfo = new PersonalInfo
+                {
+                    firstName = createUserDTO.firstName,
+                    lastName = createUserDTO.lastName,
+                    dateOfBirth = createUserDTO.dateOfBirth,
+                    profilePictureUrl = createUserDTO.profilePictureUrl
+                },
+                verification = new Verification
+                {
+                    isVerified = false,
+                    verifiedDate = null
+                },
+                authentication = new Authentication
+                {
+                    isAuthenticated = false,
+                    isLoggedIn = false,
+                    isBanned = false,
+                    refreshToken = null,
+                    accessToken = null,
+                    tokenExpiry = null,
+                    tokenCreatedAt = null
+                },
+                location = new Location
+                {
+                    country = createUserDTO!.country!,
+                    city = createUserDTO!.city!
+                },
+                timestamps = new Timestamps
+                {
+                    createdAt = DateTime.UtcNow.ToString("o"),
+                    updatedAt = null,
+                    lastLogin = null
+                }
             };
 
             try
             {
                 // Guardar el usuario en el repositorio
-                await _userInterface.AddUserAsync(user);
+                var saveuUser = await _userInterface.AddUserAsync(user);
 
                 // Mapear el modelo a DTO de salida
                 var userDto = new GetUserDTO
                 {
-                    id = user.id,
-                    userId = user.userId,
-                    username = user.username,
-                    email = user.email,
-                    firstName = user.firstName,
-                    lastName = user.lastName,
-                    dateOfBirth = user.dateOfBirth,
-                    role = user.role
+                    id = saveuUser.id,
+                    userId = saveuUser.userId,
+                    username = user.systemInfo.username,
+                    email = user.systemInfo.email,
+                    firstName = user.personalInfo.firstName,
+                    lastName = user.personalInfo.lastName,
+                    profilePictureUrl = user.personalInfo.profilePictureUrl,
+                    isVerified = user.verification.isVerified,
+                    dateOfBirth = user.personalInfo.dateOfBirth,
+                    role = user.systemInfo.role,
+                    createdAt = user.timestamps.createdAt,
+                    lastLogin = user.timestamps.updatedAt,
                 };
 
                 return userDto;
@@ -64,7 +102,7 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
             }
         }
 
-        //metodo para validar los datos de entrada
+        // Método para validar los datos de entrada
         private void ValidateCreateUserDTO(CreateUserDTO createUserDTO)
         {
             switch (createUserDTO)
@@ -85,7 +123,7 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
             }
         }
 
-        //metodo para validar el formato del correo electronico
+        // Método para validar el formato del correo electrónico
         private bool IsValidEmail(string email)
         {
             try

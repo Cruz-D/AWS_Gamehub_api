@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-public struct AuthenticateUserDTO
+public struct LoginUserDTO
 {
     [JsonPropertyName("usernameOrEmail")]
     public string usernameOrEmail { get; set; }

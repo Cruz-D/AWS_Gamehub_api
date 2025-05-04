@@ -4,12 +4,6 @@ namespace gamehub_API.Application.DTO.User
 {
     public struct CreateUserDTO
     {
-        [JsonPropertyName("id")]
-        public string? id { get; set; } // Identificador único del usuario.
-
-        [JsonPropertyName("userId")]
-        public string? userId { get; set; } // Nueva Partition Key.
-
         [JsonPropertyName("username")]
         public string username { get; set; } // Nombre de usuario único.
 
@@ -29,6 +23,18 @@ namespace gamehub_API.Application.DTO.User
         public string lastName { get; set; } // Apellido del usuario.
 
         [JsonPropertyName("dateOfBirth")]
-        public string? dateOfBirth { get; set; } // Fecha de nacimiento del usuario.
+        public string dateOfBirth { get; set; } // Fecha de nacimiento del usuario.
+
+        [JsonPropertyName("profilePictureUrl")]
+        public string? profilePictureUrl { get; set; } // URL de la imagen de perfil del usuario.
+
+        [JsonPropertyName("createdAt")]
+        public string createdAt { get; set; } // Fecha y hora de creación de la cuenta.
+
+        [JsonPropertyName("country")]
+        public string? country { get; set; } // País del usuario.
+
+        [JsonPropertyName("city")]
+        public string? city { get; set; } // Ciudad del usuario.
     }
 }

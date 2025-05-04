@@ -3,6 +3,7 @@ using gamehub_API.Application.Interfaces;
 using gamehub_API.Application.UseCases.User.CreateUserUseCase;
 using gamehub_API.Application.UseCases.User.DeleteUserUseCase;
 using gamehub_API.Application.UseCases.User.EditUserUseCase;
+using gamehub_API.Application.UseCases.User.LoginUserUseCase;
 using gamehub_API.Application.UseCases.User.UpdatePasswordUseCase;
 using gamehub_API.Application.UseCases.User.ViewUserUseCase;
 using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
@@ -79,13 +80,14 @@ namespace gamehub_API
             {
                 // Obtener el cosmosClient generado anteriormente
                 var cosmosClient = provider.GetRequiredService<CosmosClient>();
+                var passwordHasher = provider.GetRequiredService<IPasswordHasher>();
                 string databaseName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("DatabaseName")!;
                 string containerName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("UserContainer")!;
 
                 // Obtener el busServices generado anteriormente
                 var busServices = provider.GetRequiredService<BusServices>();
 
-                return new UserRepository(cosmosClient, databaseName, containerName, busServices!);
+                return new UserRepository(cosmosClient, databaseName, containerName, busServices!, passwordHasher!);
             });
 
 
@@ -100,6 +102,7 @@ namespace gamehub_API
 
             //---------------------------------------------
             builder.Services.AddScoped<ICreateUserUseCase, CreateUserUseCase>();
+            builder.Services.AddScoped<ILoginUserUseCase, LoginUserUseCase>();
             builder.Services.AddScoped<IGetUserUseCase, GetUserUseCase>();
             builder.Services.AddScoped<IUpdateUserUseCase, UpdateUserUseCase>();
             builder.Services.AddScoped<IUpdatePasswordUserUseCase, UpdatePasswordUserUseCase>();

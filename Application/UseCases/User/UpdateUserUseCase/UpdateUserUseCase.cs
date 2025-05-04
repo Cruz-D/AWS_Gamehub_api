@@ -32,10 +32,10 @@ namespace gamehub_API.Application.UseCases.User.EditUserUseCase
                 // Actualizar los campos del modelo existente con los valores del DTO
                 existingUser.id = string.IsNullOrEmpty(updateUserDTO.id) ? existingUser.id : updateUserDTO.id;
                 existingUser.userId = string.IsNullOrEmpty(updateUserDTO.userId) ? existingUser.userId : updateUserDTO.userId;
-                existingUser.email = string.IsNullOrEmpty(updateUserDTO.email) ? existingUser.email : updateUserDTO.email;
-                existingUser.firstName = string.IsNullOrEmpty(updateUserDTO.firstName) ? existingUser.firstName : updateUserDTO.firstName;
-                existingUser.lastName = string.IsNullOrEmpty(updateUserDTO.lastName) ? existingUser.lastName : updateUserDTO.lastName;
-                existingUser.dateOfBirth = string.IsNullOrEmpty(updateUserDTO.dateOfBirth) ? existingUser.dateOfBirth : updateUserDTO.dateOfBirth;
+                existingUser.systemInfo.email = string.IsNullOrEmpty(updateUserDTO.email) ? existingUser.systemInfo.email : updateUserDTO.email;
+                existingUser.personalInfo.firstName = string.IsNullOrEmpty(updateUserDTO.firstName) ? existingUser.personalInfo.firstName : updateUserDTO.firstName;
+                existingUser.personalInfo.lastName = string.IsNullOrEmpty(updateUserDTO.lastName) ? existingUser.personalInfo.lastName : updateUserDTO.lastName;
+                existingUser.personalInfo.dateOfBirth = string.IsNullOrEmpty(updateUserDTO.dateOfBirth) ? existingUser.personalInfo.dateOfBirth : updateUserDTO.dateOfBirth;
 
                 // Actualizar el usuario en el repositorio
                 var updatedUser = await _userInterface.UpdateUserAsync(existingUser);
@@ -45,12 +45,12 @@ namespace gamehub_API.Application.UseCases.User.EditUserUseCase
                 {
                     id = updatedUser.id,
                     userId = updatedUser.userId,
-                    username = updatedUser.username,
-                    email = updatedUser.email,
-                    firstName = updatedUser.firstName,
-                    lastName = updatedUser.lastName,
-                    dateOfBirth = updatedUser.dateOfBirth,
-                    role = updatedUser.role
+                    username = updatedUser.systemInfo.username,
+                    email = updatedUser.systemInfo.email,
+                    firstName = updatedUser.personalInfo.firstName,
+                    lastName = updatedUser.personalInfo.lastName,
+                    dateOfBirth = updatedUser.personalInfo.dateOfBirth,
+                    role = updatedUser.systemInfo.role
                 };
 
                 return userDto;

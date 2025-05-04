@@ -10,11 +10,13 @@ namespace gamehub_API.Infrastructure.Repositories
     {
         private readonly Container _container;
         private readonly IBusInterface? _busServices;
+        private readonly IPasswordHasher _passwordHasher;
 
-        public UserRepository(CosmosClient cosmosClient, string databaseName, string containerName, BusServices busServices)
+        public UserRepository(CosmosClient cosmosClient, string databaseName, string containerName, BusServices busServices, IPasswordHasher passwordHasher)
         {
             _container = cosmosClient.GetContainer(databaseName, containerName);
             _busServices = busServices;
+            _passwordHasher = passwordHasher;
         }
 
         public async Task<Users> AddUserAsync(Users user)
@@ -37,6 +39,7 @@ namespace gamehub_API.Infrastructure.Repositories
             }
         }
 
+        //Refactorizar esto al caso de uso
         public async Task<Users> GetUserByIdAsync(string userId)
         {
             try
@@ -135,5 +138,34 @@ namespace gamehub_API.Infrastructure.Repositories
                 throw new Exception($"Error en Cosmos DB: {ex.Message}", ex);
             }
         }
+
+        public async Task<Users> LoginUserAsync(string username, string password)
+        {
+            
+
+            try
+            {
+                // Buscar al usuario por nombre de usuario o correo electrónico
+                var query = new QueryDefinition(
+                    "SELECT * FROM c WHERE c.systemInfo.username = @value OR c.systemInfo.email = @value")
+                    .WithParameter("@value", username);
+
+                var iterator = _container.GetItemQueryIterator<Users>(query);
+                var response = await iterator.ReadNextAsync();
+
+                var foundUser = response.FirstOrDefault();
+                if (foundUser == null)
+                {
+                    throw new Exception("Usuario no encontrado.");
+                }
+
+                return foundUser;
+            }
+            catch (CosmosException ex)
+            {
+                throw new Exception($"Error en Cosmos DB: {ex.Message}", ex);
+            }
+        }
+
     }
 }
