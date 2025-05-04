@@ -5,6 +5,6 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
 {
     public interface ICreateUserUseCase
     {
-        Task ExecuteAsync(CreateUserDTO createUserDTO);
+        Task<GetUserDTO> ExecuteAsync(CreateUserDTO createUserDTO);
     }
 }

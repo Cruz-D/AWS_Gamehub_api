@@ -3,6 +3,7 @@ using gamehub_API.Application.Interfaces;
 using gamehub_API.Application.UseCases.User.CreateUserUseCase;
 using gamehub_API.Application.UseCases.User.DeleteUserUseCase;
 using gamehub_API.Application.UseCases.User.EditUserUseCase;
+using gamehub_API.Application.UseCases.User.UpdatePasswordUseCase;
 using gamehub_API.Application.UseCases.User.ViewUserUseCase;
 using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
 using gamehub_API.Application.UseCases.Videogame.GetVideogameUseCase;
@@ -91,19 +92,27 @@ namespace gamehub_API
             //---------------------------------------------
             // Registrar casos de uso
             //---------------------------------------------
+
+            //---------------------------------------------
             builder.Services.AddScoped<IGetAllVideogamesUseCase, GetAllVideogamesUseCase>();
             builder.Services.AddScoped<IGetVideogameUseCase, GetVideogameUseCase>();
+            //---------------------------------------------
 
+            //---------------------------------------------
             builder.Services.AddScoped<ICreateUserUseCase, CreateUserUseCase>();
             builder.Services.AddScoped<IGetUserUseCase, GetUserUseCase>();
             builder.Services.AddScoped<IUpdateUserUseCase, UpdateUserUseCase>();
+            builder.Services.AddScoped<IUpdatePasswordUserUseCase, UpdatePasswordUserUseCase>();
             builder.Services.AddScoped<IDeleteUserUseCase, DeleteUserUseCase>();
+            //---------------------------------------------
 
             //---------------------------------------------
             // Registrar servicios
             //---------------------------------------------
             builder.Services.AddScoped<BusServices>();
             builder.Services.AddScoped<IBusInterface, BusServices>();
+            builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
+            builder.Services.AddScoped<IIdGenerator, IdGenerator>();
 
             // Configurar Swagger/OpenAPI
             builder.Services.AddEndpointsApiExplorer();

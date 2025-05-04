@@ -2,6 +2,7 @@
 using gamehub_API.Application.Interfaces;
 using gamehub_API.Application.UseCases.User.CreateUserUseCase;
 using gamehub_API.Application.UseCases.User.DeleteUserUseCase;
+using gamehub_API.Application.UseCases.User.UpdatePasswordUseCase;
 using gamehub_API.Application.UseCases.User.EditUserUseCase;
 using gamehub_API.Application.UseCases.User.ViewUserUseCase;
 using Microsoft.AspNetCore.Mvc;
@@ -15,18 +16,21 @@ namespace gamehub_API.Application.Controllers
         private readonly ICreateUserUseCase _createUserUseCase;
         private readonly IGetUserUseCase _viewUserUseCase;
         private readonly IUpdateUserUseCase _updateUserUseCase;
+        private readonly IUpdatePasswordUserUseCase _updatePasswordUserUseCase;
         private readonly IDeleteUserUseCase _deleteUserUseCase;
 
         public UserController(
             ICreateUserUseCase createUserUseCase,
             IGetUserUseCase viewUserUseCase,
             IUpdateUserUseCase updateUserUseCase,
-            IDeleteUserUseCase deleteUserUseCase)
+            IDeleteUserUseCase deleteUserUseCase,
+            IUpdatePasswordUserUseCase updatePasswordUserUseCase)
         {
             _createUserUseCase = createUserUseCase;
             _viewUserUseCase = viewUserUseCase;
             _updateUserUseCase = updateUserUseCase;
             _deleteUserUseCase = deleteUserUseCase;
+            _updatePasswordUserUseCase = updatePasswordUserUseCase;
         }
 
         [HttpGet("{userId}")]
@@ -76,6 +80,29 @@ namespace gamehub_API.Application.Controllers
             {
                 return StatusCode(500, new { message = "Error al actualizar el usuario.", details = ex.Message });
             }
+        }
+
+        [HttpPut("{userId}/password")]
+        public async Task<IActionResult> PutPassword([FromRoute] string userId, [FromBody] ChangePasswordDTO changePasswordDTO)
+        {
+            if (userId == null)
+            {
+                return BadRequest(new { message = "El ID de la ruta no existe." });
+            }
+
+            try
+            {
+                //añadir caso de uso
+                var changePassword = await _updatePasswordUserUseCase.ExecuteAsync(changePasswordDTO);
+
+                return Ok(changePassword);
+            }
+            catch (Exception ex)
+            {
+
+                return StatusCode(500, new { message = "Error al actualizar la contraseña del usuario.", details = ex.Message });
+            }
+
         }
 
         [HttpDelete("{userId}")]

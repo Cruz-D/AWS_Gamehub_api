@@ -22,9 +22,11 @@ namespace gamehub_API.Infrastructure.Repositories
             try
             {
                 var request = await _container.CreateItemAsync(user, new PartitionKey(user.userId));
+
                 if (request.StatusCode == System.Net.HttpStatusCode.Created)
                 {
                     await _busServices!.SendMessageAsync("register", $"Se ha creado un nuevo usuario con ID: {user.id}");
+
                     return user;
                 }
                 throw new Exception("Error al crear el usuario en la base de datos.");
@@ -80,7 +82,6 @@ namespace gamehub_API.Infrastructure.Repositories
             }
         }
 
-
         public async Task<Users> DeleteUserAsync(Users user)
         {
             if (user == null)
@@ -100,6 +101,34 @@ namespace gamehub_API.Infrastructure.Repositories
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 throw new Exception($"Usuario con ID {user.id} no encontrado.", ex);
+            }
+            catch (CosmosException ex)
+            {
+                throw new Exception($"Error en Cosmos DB: {ex.Message}", ex);
+            }
+        }
+
+        public async Task<Users> UpdatePasswordUserAsync(Users user)
+        {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user), "El usuario no puede ser nulo.");
+            }
+
+            try
+            {
+                var request = await _container.ReplaceItemAsync(user, user.id, new PartitionKey(user.userId));
+
+                if (request.StatusCode == System.Net.HttpStatusCode.OK)
+                {
+                    return request.Resource;
+                }
+
+                throw new Exception("Error al actualizar la contraseña del usuario en la base de datos.");
+            }
+            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                throw new Exception($"No se encontró el usuario con userId {user.userId}.", ex);
             }
             catch (CosmosException ex)
             {

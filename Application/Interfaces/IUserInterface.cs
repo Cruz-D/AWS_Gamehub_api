@@ -7,6 +7,7 @@ namespace gamehub_API.Application.Interfaces
         Task<Users> GetUserByIdAsync(string userId);
         Task<Users> AddUserAsync(Users user);
         Task<Users> UpdateUserAsync(Users user);
+        Task<Users> UpdatePasswordUserAsync(Users user);
         Task<Users> DeleteUserAsync(Users user);
     }
 }
