@@ -10,13 +10,11 @@ namespace gamehub_API.Infrastructure.Repositories
     {
         private readonly Container _container;
         private readonly IBusInterface? _busServices;
-        private readonly IPasswordHasher _passwordHasher;
 
-        public UserRepository(CosmosClient cosmosClient, string databaseName, string containerName, BusServices busServices, IPasswordHasher passwordHasher)
+        public UserRepository(CosmosClient cosmosClient, string databaseName, string containerName, BusServices busServices)
         {
             _container = cosmosClient.GetContainer(databaseName, containerName);
             _busServices = busServices;
-            _passwordHasher = passwordHasher;
         }
 
         public async Task<Users> AddUserAsync(Users user)

@@ -1,4 +1,3 @@
-using System.Threading.Tasks;
 
 namespace gamehub_API.Application.Interfaces
 {

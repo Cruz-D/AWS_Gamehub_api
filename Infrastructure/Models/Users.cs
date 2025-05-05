@@ -9,30 +9,30 @@ public class Users
 
     [Key]
     [JsonPropertyName("id")]
-    public string id { get; set; }
+    public string? id { get; set; }
 
     [JsonPropertyName("userId")]
-    public string userId { get; set; }
+    public string? userId { get; set; }
 
     //==================================================
 
     [JsonPropertyName("SystemInfo")]
-    public SystemInfo systemInfo { get; set; } 
+    public SystemInfo? systemInfo { get; set; } 
 
     [JsonPropertyName("personalInfo")]
-    public PersonalInfo personalInfo { get; set; }
+    public PersonalInfo? personalInfo { get; set; }
 
     [JsonPropertyName("verification")]
-    public Verification verification { get; set; }
+    public Verification? verification { get; set; }
 
     [JsonPropertyName("authentication")]
-    public Authentication authentication { get; set; }
+    public Authentication? authentication { get; set; }
 
     [JsonPropertyName("location")]
-    public Location location { get; set; }
+    public Location? location { get; set; }
 
     [JsonPropertyName("timestamps")]
-    public Timestamps timestamps { get; set; }
+    public Timestamps? timestamps { get; set; }
 
     //==================================================
 
@@ -42,26 +42,26 @@ public class SystemInfo
 {
     
     [JsonPropertyName("username")]
-    public string username { get; set; }
+    public string? username { get; set; }
 
     [JsonPropertyName("password")]
-    public string password { get; set; }
+    public string? password { get; set; }
 
     [JsonPropertyName("email")]
-    public string email { get; set; }
+    public string? email { get; set; }
 
     [JsonPropertyName("role")]
-    public string role { get; set; }
+    public string? role { get; set; }
 }
 
 
 public class PersonalInfo
 {
     [JsonPropertyName("firstName")]
-    public string firstName { get; set; }
+    public string? firstName { get; set; }
 
     [JsonPropertyName("lastName")]
-    public string lastName { get; set; }
+    public string? lastName { get; set; }
 
     [JsonPropertyName("dateOfBirth")]
     public string? dateOfBirth { get; set; }
@@ -106,10 +106,10 @@ public class Authentication
 public class Location
 {
     [JsonPropertyName("country")]
-    public string country { get; set; }
+    public string? country { get; set; }
 
     [JsonPropertyName("city")]
-    public string city { get; set; }
+    public string? city { get; set; }
 }
 
 public class Timestamps

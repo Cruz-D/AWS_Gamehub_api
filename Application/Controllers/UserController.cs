@@ -8,6 +8,7 @@ using gamehub_API.Application.UseCases.User.ViewUserUseCase;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using gamehub_API.Application.UseCases.User.LoginUserUseCase;
+using Microsoft.AspNetCore.Authorization;
 
 namespace gamehub_API.Application.Controllers
 {
@@ -38,6 +39,7 @@ namespace gamehub_API.Application.Controllers
             _loginUserUseCase = loginUserUseCase;
         }
 
+        [Authorize]
         [HttpGet("{userId}")]
         public async Task<IActionResult> Get([FromRoute] string userId)
         {
@@ -82,6 +84,7 @@ namespace gamehub_API.Application.Controllers
             }
         }
 
+        [Authorize]
         [HttpPut("{userId}")]
         public async Task<IActionResult> Put([FromRoute] string userId, [FromBody] UpdateUserDTO updateUserDTO)
         {
@@ -125,6 +128,7 @@ namespace gamehub_API.Application.Controllers
 
         }
 
+        [Authorize]
         [HttpDelete("{userId}")]
         public async Task<IActionResult> Delete([FromRoute] string userId)
         {
