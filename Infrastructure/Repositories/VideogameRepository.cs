@@ -5,12 +5,12 @@ using Microsoft.Azure.Cosmos;
 
 namespace gamehub_API.Infrastructure.Repositories
 {
-    public class VideogameRepository : IVideogameRepository
+    public class VideogameRepository : IVideogameInterface
     {
         //Instanciar el contenedor de Cosmos DB
         private readonly Container _container;
 
-        private readonly IBusServices? _busServices;
+        private readonly IBusInterface? _busServices;
 
         //Constructor que recibe el cliente de Cosmos DB, el nombre de la base de datos y el nombre del contenedor
         public VideogameRepository(

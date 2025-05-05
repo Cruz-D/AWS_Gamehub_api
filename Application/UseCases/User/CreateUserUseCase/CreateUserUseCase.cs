@@ -1,6 +1,140 @@
-﻿namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
+﻿using gamehub_API.Application.DTO.User;
+using gamehub_API.Application.Interfaces;
+using gamehub_API.Infrastructure.Models;
+
+namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
 {
-    public class CreateUserUseCase
+    public class CreateUserUseCase : ICreateUserUseCase
     {
+        private readonly IUserInterface _userInterface;
+        private readonly IPasswordHasher _passwordHasher;
+        private readonly IIdGenerator _idGenerator;
+
+        public CreateUserUseCase(IUserInterface userInterface, IPasswordHasher passwordHasher, IIdGenerator idGenerator)
+        {
+            _userInterface = userInterface;
+            _passwordHasher = passwordHasher;
+            _idGenerator = idGenerator;
+        }
+
+        public async Task<GetUserDTO> ExecuteAsync(CreateUserDTO createUserDTO)
+        {
+            // Validar los datos de entrada
+            ValidateCreateUserDTO(createUserDTO);
+
+            // Crear el modelo de usuario  
+            var user = new Users
+            {
+                id = _idGenerator.GenerateId(),
+                userId = _idGenerator.GenerateId(),
+
+                systemInfo = new SystemInfo
+                {
+                    username = createUserDTO.username,
+                    password = _passwordHasher.HashPassword(createUserDTO.password),
+                    email = createUserDTO.email,
+                    role = "user"
+                },
+                personalInfo = new PersonalInfo
+                {
+                    firstName = createUserDTO.firstName,
+                    lastName = createUserDTO.lastName,
+                    dateOfBirth = createUserDTO.dateOfBirth,
+                    profilePictureUrl = createUserDTO.profilePictureUrl
+                },
+                verification = new Verification
+                {
+                    isVerified = false,
+                    verifiedDate = null
+                },
+                authentication = new Authentication
+                {
+                    isAuthenticated = false,
+                    isLoggedIn = false,
+                    isBanned = false,
+                    refreshToken = null,
+                    accessToken = null,
+                    tokenExpiry = null,
+                    tokenCreatedAt = null
+                },
+                location = new Location
+                {
+                    country = createUserDTO!.country!,
+                    city = createUserDTO!.city!
+                },
+                timestamps = new Timestamps
+                {
+                    createdAt = DateTime.UtcNow.ToString("o"),
+                    updatedAt = null,
+                    lastLogin = null
+                }
+            };
+
+            try
+            {
+                // Guardar el usuario en el repositorio
+                var saveuUser = await _userInterface.AddUserAsync(user);
+
+                // Mapear el modelo a DTO de salida
+                var userDto = new GetUserDTO
+                {
+                    id = saveuUser.id,
+                    userId = saveuUser.userId,
+                    username = user.systemInfo.username,
+                    email = user.systemInfo.email,
+                    firstName = user.personalInfo.firstName,
+                    lastName = user.personalInfo.lastName,
+                    profilePictureUrl = user.personalInfo.profilePictureUrl,
+                    isVerified = user.verification.isVerified,
+                    dateOfBirth = user.personalInfo.dateOfBirth,
+                    role = user.systemInfo.role,
+                    createdAt = user.timestamps.createdAt,
+                    lastLogin = user.timestamps.updatedAt,
+                };
+
+                return userDto;
+
+            }
+            catch (Exception ex)
+            {
+                // Manejar excepciones específicas si es necesario
+                throw new Exception("Error al crear el usuario.", ex);
+            }
+        }
+
+        // Método para validar los datos de entrada
+        private void ValidateCreateUserDTO(CreateUserDTO createUserDTO)
+        {
+            switch (createUserDTO)
+            {
+                case { username: null or "" }:
+                    throw new ArgumentException("El nombre de usuario no puede ser nulo o vacío.", nameof(createUserDTO.username));
+
+                case { email: null or "" }:
+                    throw new ArgumentException("El correo electrónico no puede ser nulo o vacío.", nameof(createUserDTO.email));
+
+                case { password: null or "" }:
+                    throw new ArgumentException("La contraseña no puede ser nula o vacía.", nameof(createUserDTO.password));
+
+                default:
+                    if (!IsValidEmail(createUserDTO.email))
+                        throw new ArgumentException("El formato del correo electrónico no es válido.", nameof(createUserDTO.email));
+                    break;
+            }
+        }
+
+        // Método para validar el formato del correo electrónico
+        private bool IsValidEmail(string email)
+        {
+            try
+            {
+                var addr = new System.Net.Mail.MailAddress(email);
+                return addr.Address == email;
+            }
+            catch
+            {
+                return false;
+            }
+        }
     }
 }

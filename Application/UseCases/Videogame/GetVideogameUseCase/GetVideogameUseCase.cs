@@ -4,9 +4,9 @@ namespace gamehub_API.Application.UseCases.Videogame.GetVideogameUseCase
 {
     public class GetVideogameUseCase : IGetVideogameUseCase
     {
-        private readonly IVideogameRepository _videogameRepository;
+        private readonly IVideogameInterface _videogameRepository;
 
-        public GetVideogameUseCase(IVideogameRepository videogameRepository)
+        public GetVideogameUseCase(IVideogameInterface videogameRepository)
         {
             _videogameRepository = videogameRepository;
         }

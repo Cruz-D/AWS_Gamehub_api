@@ -10,8 +10,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Application\DTO\Videogame\**" />
+    <Content Remove="Application\DTO\Videogame\**" />
+    <EmbeddedResource Remove="Application\DTO\Videogame\**" />
+    <None Remove="Application\DTO\Videogame\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.19.0" />
     <PackageReference Include="Azure.ResourceManager.CosmosDB" Version="1.3.2" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.15" />
     <PackageReference Include="Microsoft.Azure.Cosmos" Version="3.49.0" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
@@ -20,8 +29,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Application\DTO\User\" />
-    <Folder Include="Application\DTO\Videogame\" />
+    <Folder Include="Infrastructure\Services\IdGenerator\" />
+    <Folder Include="Infrastructure\Services\PasswordHasher\" />
   </ItemGroup>
 
 </Project>

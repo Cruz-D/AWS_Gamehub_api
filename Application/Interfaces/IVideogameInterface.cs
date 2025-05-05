@@ -2,7 +2,7 @@
 
 namespace gamehub_API.Application.Interfaces
 {
-    public interface IVideogameRepository
+    public interface IVideogameInterface
     {
         // GET
         Task<List<Videogame>> GetAllVideogamesAsync(string sqlCosmosQuery);
