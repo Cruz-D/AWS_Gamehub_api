@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using gamehub_API.Application.UseCases.User.LoginUserUseCase;
 using Microsoft.AspNetCore.Authorization;
+using gamehub_API.Application.UseCases.User.LogOutUserUseCase;
 
 namespace gamehub_API.Application.Controllers
 {
@@ -22,6 +23,7 @@ namespace gamehub_API.Application.Controllers
         private readonly IUpdatePasswordUserUseCase _updatePasswordUserUseCase;
         private readonly IDeleteUserUseCase _deleteUserUseCase;
         private readonly ILoginUserUseCase _loginUserUseCase;
+        private readonly ILogOutUserUseCase _logOutUserUseCase;
 
         public UserController(
             ICreateUserUseCase createUserUseCase,
@@ -29,7 +31,8 @@ namespace gamehub_API.Application.Controllers
             IUpdateUserUseCase updateUserUseCase,
             IDeleteUserUseCase deleteUserUseCase,
             IUpdatePasswordUserUseCase updatePasswordUserUseCase,
-            ILoginUserUseCase loginUserUseCase)
+            ILoginUserUseCase loginUserUseCase,
+            ILogOutUserUseCase logOutUserUseCase)
         {
             _createUserUseCase = createUserUseCase;
             _viewUserUseCase = viewUserUseCase;
@@ -37,6 +40,7 @@ namespace gamehub_API.Application.Controllers
             _deleteUserUseCase = deleteUserUseCase;
             _updatePasswordUserUseCase = updatePasswordUserUseCase;
             _loginUserUseCase = loginUserUseCase;
+            _logOutUserUseCase = logOutUserUseCase;
         }
 
         [Authorize]
@@ -144,6 +148,27 @@ namespace gamehub_API.Application.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Error al eliminar el usuario.", details = ex.Message });
+            }
+        }
+
+        [Authorize]
+        [HttpPost("{userId}/logout")]
+        public async Task<IActionResult> Logout([FromRoute] string userId, [FromBody] LogOutUserDTO logOutUserDTO)
+        {
+            if (logOutUserDTO == null || string.IsNullOrEmpty(logOutUserDTO.userId) || string.IsNullOrEmpty(logOutUserDTO.token))
+            {
+                return BadRequest(new { message = "Datos de cierre de sesión inválidos." });
+            }
+
+            try
+            {
+                await _logOutUserUseCase.ExecuteAsync(logOutUserDTO);
+
+                return Ok(new { message = "Sesión cerrada correctamente." });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new { message = "Error al cerrar la sesión.", details = ex.Message });
             }
         }
     }

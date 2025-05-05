@@ -17,6 +17,8 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
+using gamehub_API.Application.UseCases.User.LogOutUserUseCase;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace gamehub_API
 {
@@ -48,7 +50,13 @@ namespace gamehub_API
                     ValidateIssuerSigningKey = true, // Validar la clave de firma del token
                     ValidIssuer = builder.Configuration["Jwt:Issuer"], // Emisor válido desde appsettings.json
                     ValidAudience = builder.Configuration["Jwt:Audience"], // Audiencia válida desde appsettings.json
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder!.Configuration!["Jwt:Key"]!)) // Clave de firma
+                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder!.Configuration!["Jwt:Key"]!)), // Clave de firma
+                    //validar el tiempo de expiración del token
+                    LifetimeValidator = (notBefore, expires, securityToken, validationParameters) =>
+                    {
+                        var jwtToken = securityToken as JwtSecurityToken;
+                        return expires > DateTime.UtcNow || !LogOutUserUseCase.IsTokenRevoked(jwtToken?.RawData ?? string.Empty);
+                    }
                 };
             });
 
@@ -155,6 +163,7 @@ namespace gamehub_API
             // Casos de uso para usuarios
             builder.Services.AddScoped<ICreateUserUseCase, CreateUserUseCase>();
             builder.Services.AddScoped<ILoginUserUseCase, LoginUserUseCase>();
+            builder.Services.AddScoped<ILogOutUserUseCase, LogOutUserUseCase>();
             builder.Services.AddScoped<IGetUserUseCase, GetUserUseCase>();
             builder.Services.AddScoped<IUpdateUserUseCase, UpdateUserUseCase>();
             builder.Services.AddScoped<IUpdatePasswordUserUseCase, UpdatePasswordUserUseCase>();

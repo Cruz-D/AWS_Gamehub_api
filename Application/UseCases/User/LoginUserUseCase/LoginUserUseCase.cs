@@ -7,14 +7,13 @@ namespace gamehub_API.Application.UseCases.User.LoginUserUseCase
     {
         private readonly IUserInterface _userInterface;
         private readonly IPasswordHasher _passwordHasher;
-        private readonly IIdGenerator _idGenerator;
+        
         private readonly IJwtInterface _jwtInterface;
 
-        public LoginUserUseCase(IUserInterface userInterface, IPasswordHasher passwordHasher, IIdGenerator idGenerator, IJwtInterface jwtInterface)
+        public LoginUserUseCase(IUserInterface userInterface, IPasswordHasher passwordHasher, IJwtInterface jwtInterface)
         {
             _userInterface = userInterface;
             _passwordHasher = passwordHasher;
-            _idGenerator = idGenerator;
             _jwtInterface = jwtInterface;
         }
 
@@ -34,9 +33,12 @@ namespace gamehub_API.Application.UseCases.User.LoginUserUseCase
                 }
 
                 //generar un nuevo token de acceso
-                var accessToken = _jwtInterface.GenerateToken(loggedUser!.userId!, loggedUser!.systemInfo!.username!, loggedUser!.systemInfo!.role!);
+                var accessToken = _jwtInterface.GenerateToken(loggedUser!.userId!, loggedUser!.systemInfo!.username!, loggedUser!.systemInfo!.role!, "refresh");
 
-                if(accessToken == null)
+                //generar refresh token
+                var refreshToken = _jwtInterface.GenerateRefreshToken();
+
+                if (accessToken == null)
                 {
                     throw new Exception("Error al generar el token de acceso");
                 }
@@ -45,32 +47,26 @@ namespace gamehub_API.Application.UseCases.User.LoginUserUseCase
                 loggedUser!.authentication!.isLoggedIn = true;
                 loggedUser!.timestamps!.lastLogin = DateTime.UtcNow.ToString("o");
                 loggedUser!.authentication!.accessToken = accessToken;
+                loggedUser!.authentication!.refreshToken = refreshToken;
                 loggedUser!.authentication!.tokenExpiry = DateTime.UtcNow.AddHours(1).ToString("o");
                 loggedUser!.authentication!.tokenCreatedAt = DateTime.UtcNow.ToString("o");
-
-
-
-
 
                 var updatedUser = await _userInterface.UpdateUserAsync(loggedUser);
 
                 // Mapear los resultados de vuelta a LoginResponseUserDTO  
                 var loginResponde = new LoginResponseUserDTO
                 {
-                    UserId = loggedUser!.userId!,
-                    Username = loggedUser!.systemInfo!.username!,
-                    Email = loggedUser!.systemInfo!.email!,
+                    userId = updatedUser!.userId,
                     LastLogin = loggedUser!.timestamps!.lastLogin,
                     IsAuthenticated = isPasswordValid,
                     accessToken = updatedUser!.authentication!.accessToken,
+                    refreshToken = updatedUser!.authentication!.refreshToken,
                     tokenCreatedAt = updatedUser!.timestamps!.createdAt,
                     tokenExpiry = updatedUser!.authentication!.tokenExpiry,
 
                 };
 
                 return loginResponde;
-
-
 
             }
             catch (Exception ex)

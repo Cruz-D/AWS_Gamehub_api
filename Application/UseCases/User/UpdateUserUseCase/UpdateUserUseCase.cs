@@ -36,6 +36,7 @@ namespace gamehub_API.Application.UseCases.User.EditUserUseCase
                 existingUser.personalInfo.firstName = string.IsNullOrEmpty(updateUserDTO.firstName) ? existingUser.personalInfo.firstName : updateUserDTO.firstName;
                 existingUser.personalInfo.lastName = string.IsNullOrEmpty(updateUserDTO.lastName) ? existingUser.personalInfo.lastName : updateUserDTO.lastName;
                 existingUser.personalInfo.dateOfBirth = string.IsNullOrEmpty(updateUserDTO.dateOfBirth) ? existingUser.personalInfo.dateOfBirth : updateUserDTO.dateOfBirth;
+                existingUser.timestamps.updatedAt = DateTime.UtcNow.ToString("o");
 
                 // Actualizar el usuario en el repositorio
                 var updatedUser = await _userInterface.UpdateUserAsync(existingUser);
