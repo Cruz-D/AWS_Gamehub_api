@@ -1,4 +1,4 @@
-﻿namespace gamehub_API.Application.UseCases.User.LoginUserUseCase
+﻿namespace gamehub_API.Application.UseCases.Auth.LoginUserUseCase
 {
     public interface ILoginUserUseCase
     {

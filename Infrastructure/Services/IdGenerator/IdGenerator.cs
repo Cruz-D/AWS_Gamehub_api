@@ -6,4 +6,5 @@ public class IdGenerator : IIdGenerator
     {
         return Guid.NewGuid().ToString();
     }
+
 }

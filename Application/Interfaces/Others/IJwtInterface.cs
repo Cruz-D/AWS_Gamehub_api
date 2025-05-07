@@ -1,4 +1,4 @@
-﻿namespace gamehub_API.Application.Interfaces
+﻿namespace gamehub_API.Application.Interfaces.Others
 {
     public interface IJwtInterface
     {

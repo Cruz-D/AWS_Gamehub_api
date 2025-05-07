@@ -1,7 +1,7 @@
-﻿using gamehub_API.Application.DTO.User;
+﻿using gamehub_API.Application.DTO.Auth;
 using gamehub_API.Application.Interfaces;
 
-namespace gamehub_API.Application.UseCases.User.LogOutUserUseCase
+namespace gamehub_API.Application.UseCases.Auth.LogOutUserUseCase
 {
     public class LogOutUserUseCase : ILogOutUserUseCase
     {
@@ -43,5 +43,5 @@ namespace gamehub_API.Application.UseCases.User.LogOutUserUseCase
         }
 
     }
-   
+
 }
