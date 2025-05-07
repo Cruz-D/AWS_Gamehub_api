@@ -1,10 +1,10 @@
 ﻿using Newtonsoft.Json;
 
-namespace gamehub_API.Application.DTO.User
+namespace gamehub_API.Application.DTO.Auth
 {
     public class LogOutUserDTO
     {
-        
+
         [JsonProperty("userId")]
         public string? userId { get; set; } // ID del usuario que desea cerrar sesión
 

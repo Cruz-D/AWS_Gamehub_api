@@ -19,15 +19,13 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
 
         public async Task<GetUserDTO> ExecuteAsync(CreateUserDTO createUserDTO)
         {
-            // Validar los datos de entrada
+            
             ValidateCreateUserDTO(createUserDTO);
 
-            // Crear el modelo de usuario  
             var user = new Users
             {
                 id = _idGenerator.GenerateId(),
                 userId = _idGenerator.GenerateId(),
-
                 systemInfo = new SystemInfo
                 {
                     username = createUserDTO.username,
@@ -59,8 +57,8 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
                 },
                 location = new Location
                 {
-                    country = createUserDTO!.country!,
-                    city = createUserDTO!.city!
+                    country = createUserDTO.country,
+                    city = createUserDTO.city
                 },
                 timestamps = new Timestamps
                 {
@@ -72,14 +70,12 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
 
             try
             {
-                // Guardar el usuario en el repositorio
-                var saveuUser = await _userInterface.AddUserAsync(user);
+                var savedUser = await _userInterface.AddUserAsync(user);
 
-                // Mapear el modelo a DTO de salida
-                var userDto = new GetUserDTO
+                return new GetUserDTO
                 {
-                    id = saveuUser.id,
-                    userId = saveuUser.userId,
+                    id = savedUser.id,
+                    userId = savedUser.userId,
                     username = user.systemInfo.username,
                     email = user.systemInfo.email,
                     firstName = user.personalInfo.firstName,
@@ -91,16 +87,13 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
                     createdAt = user.timestamps.createdAt,
                     lastLogin = user.timestamps.updatedAt,
                 };
-
-                return userDto;
-
             }
             catch (Exception ex)
             {
-                // Manejar excepciones específicas si es necesario
                 throw new Exception("Error al crear el usuario.", ex);
             }
         }
+
 
         // Método para validar los datos de entrada
         private void ValidateCreateUserDTO(CreateUserDTO createUserDTO)

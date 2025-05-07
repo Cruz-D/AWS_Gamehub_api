@@ -7,9 +7,9 @@ using gamehub_API.Application.UseCases.User.EditUserUseCase;
 using gamehub_API.Application.UseCases.User.ViewUserUseCase;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using gamehub_API.Application.UseCases.User.LoginUserUseCase;
 using Microsoft.AspNetCore.Authorization;
-using gamehub_API.Application.UseCases.User.LogOutUserUseCase;
+using gamehub_API.Application.UseCases.Auth.LogOutUserUseCase;
+using gamehub_API.Application.UseCases.Auth.LoginUserUseCase;
 
 namespace gamehub_API.Application.Controllers
 {
@@ -17,30 +17,25 @@ namespace gamehub_API.Application.Controllers
     [ApiController]
     public class UserController : ControllerBase
     {
-        private readonly ICreateUserUseCase _createUserUseCase;
+
         private readonly IGetUserUseCase _viewUserUseCase;
         private readonly IUpdateUserUseCase _updateUserUseCase;
         private readonly IUpdatePasswordUserUseCase _updatePasswordUserUseCase;
         private readonly IDeleteUserUseCase _deleteUserUseCase;
-        private readonly ILoginUserUseCase _loginUserUseCase;
-        private readonly ILogOutUserUseCase _logOutUserUseCase;
 
-        public UserController(
-            ICreateUserUseCase createUserUseCase,
+
+        public UserController
+            (
             IGetUserUseCase viewUserUseCase,
             IUpdateUserUseCase updateUserUseCase,
             IDeleteUserUseCase deleteUserUseCase,
-            IUpdatePasswordUserUseCase updatePasswordUserUseCase,
-            ILoginUserUseCase loginUserUseCase,
-            ILogOutUserUseCase logOutUserUseCase)
+            IUpdatePasswordUserUseCase updatePasswordUserUseCase
+            )
         {
-            _createUserUseCase = createUserUseCase;
             _viewUserUseCase = viewUserUseCase;
             _updateUserUseCase = updateUserUseCase;
             _deleteUserUseCase = deleteUserUseCase;
             _updatePasswordUserUseCase = updatePasswordUserUseCase;
-            _loginUserUseCase = loginUserUseCase;
-            _logOutUserUseCase = logOutUserUseCase;
         }
 
         [Authorize]
@@ -56,35 +51,6 @@ namespace gamehub_API.Application.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Error interno del servidor.", details = ex.Message });
-            }
-        }
-
-        [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginUserDTO loginUserDTO)
-        {
-            try
-            {
-                var loginResponse = await _loginUserUseCase.ExecuteAsync(loginUserDTO);
-
-                return Ok(loginResponse);
-            }
-            catch (Exception ex)
-            {
-                return Unauthorized(new { message = ex.Message });
-            }
-        }
-
-        [HttpPost]
-        public async Task<IActionResult> Post([FromBody] CreateUserDTO createUserDTO)
-        {
-            try
-            {
-                var createUser = await _createUserUseCase.ExecuteAsync(createUserDTO);
-                return CreatedAtAction(nameof(Get), new { createUser.userId }, createUser);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error al crear el usuario.", details = ex.Message, StackTrace = ex.StackTrace });
             }
         }
 
@@ -109,6 +75,7 @@ namespace gamehub_API.Application.Controllers
             }
         }
 
+        [Authorize]
         [HttpPut("{userId}/password")]
         public async Task<IActionResult> PutPassword([FromRoute] string userId, [FromBody] ChangePasswordDTO changePasswordDTO)
         {
@@ -148,27 +115,6 @@ namespace gamehub_API.Application.Controllers
             catch (Exception ex)
             {
                 return StatusCode(500, new { message = "Error al eliminar el usuario.", details = ex.Message });
-            }
-        }
-
-        [Authorize]
-        [HttpPost("{userId}/logout")]
-        public async Task<IActionResult> Logout([FromRoute] string userId, [FromBody] LogOutUserDTO logOutUserDTO)
-        {
-            if (logOutUserDTO == null || string.IsNullOrEmpty(logOutUserDTO.userId) || string.IsNullOrEmpty(logOutUserDTO.token))
-            {
-                return BadRequest(new { message = "Datos de cierre de sesión inválidos." });
-            }
-
-            try
-            {
-                await _logOutUserUseCase.ExecuteAsync(logOutUserDTO);
-
-                return Ok(new { message = "Sesión cerrada correctamente." });
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new { message = "Error al cerrar la sesión.", details = ex.Message });
             }
         }
     }

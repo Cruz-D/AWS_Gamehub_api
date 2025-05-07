@@ -6,7 +6,6 @@ using gamehub_API.Application.Interfaces;
 using gamehub_API.Application.UseCases.User.CreateUserUseCase;
 using gamehub_API.Application.UseCases.User.DeleteUserUseCase;
 using gamehub_API.Application.UseCases.User.EditUserUseCase;
-using gamehub_API.Application.UseCases.User.LoginUserUseCase;
 using gamehub_API.Application.UseCases.User.UpdatePasswordUseCase;
 using gamehub_API.Application.UseCases.User.ViewUserUseCase;
 using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
@@ -17,8 +16,12 @@ using Microsoft.Azure.Cosmos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using gamehub_API.Application.UseCases.User.LogOutUserUseCase;
 using System.IdentityModel.Tokens.Jwt;
+using gamehub_API.Infrastructure.Middlewares;
+using gamehub_API.Application.UseCases.Auth.LogOutUserUseCase;
+using gamehub_API.Application.UseCases.Auth.LoginUserUseCase;
+using gamehub_API.Application.UseCases.Auth.RefreshTokenUserUseCase;
+using gamehub_API.Application.Interfaces.Others;
 
 namespace gamehub_API
 {
@@ -152,18 +155,35 @@ namespace gamehub_API
                 return new UserRepository(cosmosClient, databaseName, containerName, busServices!);
             });
 
+            // Registrar el repositorio de usuarios
+            builder.Services.AddScoped<IAuthInterface>(provider =>
+            {
+                var cosmosClient = provider.GetRequiredService<CosmosClient>();
+                string databaseName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("DatabaseName")!;
+                string containerName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("UserContainer")!;
+                var busServices = provider.GetRequiredService<BusServices>();
+
+                return new AuthRepository(cosmosClient, databaseName, containerName);
+            });
+
             // ============================================
             // REGISTRO DE CASOS DE USO
             // ============================================
 
+            // Caso de uso para Auth
+           
             // Casos de uso para videojuegos
             builder.Services.AddScoped<IGetAllVideogamesUseCase, GetAllVideogamesUseCase>();
             builder.Services.AddScoped<IGetVideogameUseCase, GetVideogameUseCase>();
 
-            // Casos de uso para usuarios
-            builder.Services.AddScoped<ICreateUserUseCase, CreateUserUseCase>();
+            // Casos de uso para autenticación
             builder.Services.AddScoped<ILoginUserUseCase, LoginUserUseCase>();
             builder.Services.AddScoped<ILogOutUserUseCase, LogOutUserUseCase>();
+            builder.Services.AddScoped<IRefreshTokenUserUseCase, RefreshTokenUseCase>();
+
+
+            // Casos de uso para usuarios
+            builder.Services.AddScoped<ICreateUserUseCase, CreateUserUseCase>();
             builder.Services.AddScoped<IGetUserUseCase, GetUserUseCase>();
             builder.Services.AddScoped<IUpdateUserUseCase, UpdateUserUseCase>();
             builder.Services.AddScoped<IUpdatePasswordUserUseCase, UpdatePasswordUserUseCase>();
@@ -189,12 +209,20 @@ namespace gamehub_API
 
             var app = builder.Build();
 
+            app.UseCors("AllowAllOrigins"); // Aplicar la política de CORS
+
+            // middleware para obtener logs
+            app.UseMiddleware<LoggingMiddleware>();
+
             // Configuración del pipeline de solicitudes HTTP
             if (app.Environment.IsDevelopment() || app.Environment.IsProduction())
             {
                 app.UseSwagger(); // Habilitar Swagger
                 app.UseSwaggerUI(); // Habilitar la interfaz de usuario de Swagger
             }
+
+            // Middleware global para manejo de excepciones
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
 
             app.UseHttpsRedirection(); // Redirigir a HTTPS
             app.UseAuthorization();   // Configurar autorización

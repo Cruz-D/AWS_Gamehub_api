@@ -1,4 +1,5 @@
 ﻿using gamehub_API.Application.Interfaces;
+using gamehub_API.Application.Interfaces.Others;
 using gamehub_API.Infrastructure.Models;
 using gamehub_API.Infrastructure.Services.ServiceBus;
 using Microsoft.Azure.Cosmos;
@@ -21,12 +22,15 @@ namespace gamehub_API.Infrastructure.Repositories
         {
             try
             {
+                // Crear el usuario en la base de datos
                 var request = await _container.CreateItemAsync(user, new PartitionKey(user.userId));
 
+                // Enviar un mensaje a la cola de Service Bus si la creación fue exitosa
                 if (request.StatusCode == System.Net.HttpStatusCode.Created)
                 {
                     await _busServices!.SendMessageAsync("register", $"Se ha creado un nuevo usuario con ID: {user.id}");
 
+                    // Devolver el usuario creado para mapearlo en un DTO
                     return user;
                 }
                 throw new Exception("Error al crear el usuario en la base de datos.");
@@ -35,13 +39,23 @@ namespace gamehub_API.Infrastructure.Repositories
             {
                 throw new Exception($"Error en Cosmos DB: {ex.Message}", ex);
             }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error inesperado: {ex.Message}", ex);
+            }
         }
 
-        //Refactorizar esto al caso de uso
         public async Task<Users> GetUserByIdAsync(string userId)
         {
+
+            // Verificar si el userId es nulo o vacío
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new ArgumentNullException(nameof(userId), "El ID del usuario no puede ser nulo o vacío.");
+            }
             try
             {
+                // Consular a cosmos DB por el usuario
                 var query = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId").WithParameter("@userId", userId);
                 var iterator = _container.GetItemQueryIterator<Users>(query);
                 var response = await iterator.ReadNextAsync();
@@ -51,6 +65,10 @@ namespace gamehub_API.Infrastructure.Repositories
             catch (CosmosException ex)
             {
                 throw new Exception($"Error en Cosmos DB: {ex.Message}", ex);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"Error inesperado: {ex.Message}", ex);
             }
         }
 
@@ -130,34 +148,6 @@ namespace gamehub_API.Infrastructure.Repositories
             catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
             {
                 throw new Exception($"No se encontró el usuario con userId {user.userId}.", ex);
-            }
-            catch (CosmosException ex)
-            {
-                throw new Exception($"Error en Cosmos DB: {ex.Message}", ex);
-            }
-        }
-
-        public async Task<Users> LoginUserAsync(string username, string password)
-        {
-            
-
-            try
-            {
-                // Buscar al usuario por nombre de usuario o correo electrónico
-                var query = new QueryDefinition(
-                    "SELECT * FROM c WHERE c.systemInfo.username = @value OR c.systemInfo.email = @value")
-                    .WithParameter("@value", username);
-
-                var iterator = _container.GetItemQueryIterator<Users>(query);
-                var response = await iterator.ReadNextAsync();
-
-                var foundUser = response.FirstOrDefault();
-                if (foundUser == null)
-                {
-                    throw new Exception("Usuario no encontrado.");
-                }
-
-                return foundUser;
             }
             catch (CosmosException ex)
             {

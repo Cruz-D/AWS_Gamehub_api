@@ -29,6 +29,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Infrastructure\Middlewares\" />
     <Folder Include="Infrastructure\Services\IdGenerator\" />
     <Folder Include="Infrastructure\Services\PasswordHasher\" />
   </ItemGroup>

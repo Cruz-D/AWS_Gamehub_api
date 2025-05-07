@@ -3,7 +3,9 @@ using System.Security.Claims; // Proporciona clases para trabajar con claims (in
 using Microsoft.IdentityModel.Tokens; // Proporciona clases para manejar la seguridad de los tokens.
 using System.Text; // Para trabajar con codificación de texto.
 using gamehub_API.Application.Interfaces;
-using System.Security.Cryptography; // Interfaz que implementa esta clase.
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Identity;
+using gamehub_API.Application.Interfaces.Others; // Interfaz que implementa esta clase.
 
 public class JwtService : IJwtInterface
 {
@@ -100,4 +102,26 @@ public class JwtService : IJwtInterface
         return Convert.ToBase64String(randomNumber); // Convertir los bytes a una cadena en formato Base64.
     }
 
+    // Método para validar el refresh token.
+    public async Task<bool> ValidateRefreshTokenAsync(string userId, string refreshToken, IUserInterface userInterface)
+    {
+        var user = await userInterface.GetUserByIdAsync(userId);
+        if (user == null || user.authentication == null)
+            return false;
+
+        return user.authentication.refreshToken == refreshToken &&
+               DateTime.UtcNow <= DateTime.Parse(user.authentication.tokenExpiry);
+    }
+
+    // Método para revocar el refresh token.
+    public async Task RevokeRefreshTokenAsync(string userId, IUserInterface userInterface)
+    {
+        var user = await userInterface.GetUserByIdAsync(userId);
+        if (user != null && user.authentication != null)
+        {
+            user.authentication.refreshToken = null;
+            user.authentication.tokenExpiry = null;
+            await userInterface.UpdateUserAsync(user);
+        }
+    }
 }

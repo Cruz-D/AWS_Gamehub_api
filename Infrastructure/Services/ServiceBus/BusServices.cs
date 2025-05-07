@@ -1,5 +1,5 @@
 ﻿using Azure.Messaging.ServiceBus;
-using gamehub_API.Application.Interfaces;
+using gamehub_API.Application.Interfaces.Others;
 
 namespace gamehub_API.Infrastructure.Services.ServiceBus
 {

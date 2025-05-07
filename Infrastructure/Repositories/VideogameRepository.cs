@@ -1,4 +1,5 @@
 ﻿using gamehub_API.Application.Interfaces;
+using gamehub_API.Application.Interfaces.Others;
 using gamehub_API.Infrastructure.Models;
 using gamehub_API.Infrastructure.Services.ServiceBus;
 using Microsoft.Azure.Cosmos;
