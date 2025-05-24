@@ -1,43 +1,32 @@
-﻿using gamehub_API.Application.Interfaces;
+﻿using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
+using gamehub_API.Application.Interfaces;
 using gamehub_API.Application.Interfaces.Others;
 using gamehub_API.Infrastructure.Models;
-using gamehub_API.Infrastructure.Services.ServiceBus;
-using Microsoft.Azure.Cosmos;
 using System.Text.Json;
 
 namespace gamehub_API.Infrastructure.Repositories
 {
     public class UserRepository : IUserInterface
     {
-        private readonly Container _container;
-        private readonly IBusInterface? _busServices;
+        private readonly IDynamoDBContext _context;
+        private readonly IAmazonDynamoDB _dynamoDBClient;
 
-        public UserRepository(CosmosClient cosmosClient, string databaseName, string containerName, BusServices busServices)
+        public UserRepository(IDynamoDBContext dynamoDBContext, IAmazonDynamoDB amazonDynamoDB)
         {
-            _container = cosmosClient.GetContainer(databaseName, containerName);
-            _busServices = busServices;
+            _context = dynamoDBContext;
+            _dynamoDBClient = amazonDynamoDB;
         }
 
         public async Task<Users> AddUserAsync(Users user)
         {
             try
             {
-                // Crear el usuario en la base de datos
-                var request = await _container.CreateItemAsync(user, new PartitionKey(user.userId));
+                // Guardar el usuario en la base de datos  
+                await _context.SaveAsync(user);
 
-                // Enviar un mensaje a la cola de Service Bus si la creación fue exitosa
-                if (request.StatusCode == System.Net.HttpStatusCode.Created)
-                {
-                    await _busServices!.SendMessageAsync("register", $"Se ha creado un nuevo usuario con ID: {user.id}");
-
-                    // Devolver el usuario creado para mapearlo en un DTO
-                    return user;
-                }
-                throw new Exception("Error al crear el usuario en la base de datos.");
-            }
-            catch (CosmosException ex)
-            {
-                throw new Exception($"Error en Cosmos DB: {ex.Message}", ex);
+                // Devolver el usuario creado para mapearlo en un DTO  
+                return user;
             }
             catch (Exception ex)
             {
@@ -55,17 +44,10 @@ namespace gamehub_API.Infrastructure.Repositories
             }
             try
             {
-                // Consular a cosmos DB por el usuario
-                var query = new QueryDefinition("SELECT * FROM c WHERE c.userId = @userId").WithParameter("@userId", userId);
-                var iterator = _container.GetItemQueryIterator<Users>(query);
-                var response = await iterator.ReadNextAsync();
 
-                return response.FirstOrDefault() ?? throw new Exception($"Usuario con ID {userId} no encontrado.");
+                return await _context.LoadAsync<Users>(userId);
             }
-            catch (CosmosException ex)
-            {
-                throw new Exception($"Error en Cosmos DB: {ex.Message}", ex);
-            }
+           
             catch (Exception ex)
             {
                 throw new Exception($"Error inesperado: {ex.Message}", ex);
@@ -81,23 +63,15 @@ namespace gamehub_API.Infrastructure.Repositories
 
             try
             {
-                // Guardar los cambios en la base de datos
-                var request = await _container.ReplaceItemAsync(user, user.id, new PartitionKey(user.userId));
+                // Actualizar los cambios del usuario en DynamoDB  
+                await _context.SaveAsync(user);
 
-                if (request.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    return request.Resource;
-                }
-
-                throw new Exception("Error al actualizar el usuario en la base de datos.");
+                // Devolver el usuario actualizado  
+                return user;
             }
-            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            catch (Exception ex)
             {
-                throw new Exception($"No se encontró el usuario con userId {user.userId}.", ex);
-            }
-            catch (CosmosException ex)
-            {
-                throw new Exception($"Error en Cosmos DB: {ex.Message}", ex);
+                throw new Exception($"Error en DynamoDB: {ex.Message}", ex);
             }
         }
 
@@ -110,18 +84,13 @@ namespace gamehub_API.Infrastructure.Repositories
 
             try
             {
-                var request = await _container.DeleteItemAsync<Users>(user.id, new PartitionKey(user.userId));
-                if (request.StatusCode == System.Net.HttpStatusCode.NoContent)
-                {
-                    return user;
-                }
-                throw new Exception("Error al eliminar el usuario de la base de datos.");
+                // Eliminar el usuario de la base de datos
+                await _context.DeleteAsync(user);
+
+                return user;
             }
-            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                throw new Exception($"Usuario con ID {user.id} no encontrado.", ex);
-            }
-            catch (CosmosException ex)
+
+            catch (Exception ex)
             {
                 throw new Exception($"Error en Cosmos DB: {ex.Message}", ex);
             }
@@ -129,30 +98,7 @@ namespace gamehub_API.Infrastructure.Repositories
 
         public async Task<Users> UpdatePasswordUserAsync(Users user)
         {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user), "El usuario no puede ser nulo.");
-            }
-
-            try
-            {
-                var request = await _container.ReplaceItemAsync(user, user.id, new PartitionKey(user.userId));
-
-                if (request.StatusCode == System.Net.HttpStatusCode.OK)
-                {
-                    return request.Resource;
-                }
-
-                throw new Exception("Error al actualizar la contraseña del usuario en la base de datos.");
-            }
-            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
-            {
-                throw new Exception($"No se encontró el usuario con userId {user.userId}.", ex);
-            }
-            catch (CosmosException ex)
-            {
-                throw new Exception($"Error en Cosmos DB: {ex.Message}", ex);
-            }
+            throw new NotImplementedException();
         }
 
     }

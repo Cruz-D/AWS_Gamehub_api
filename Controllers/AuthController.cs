@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace gamehub_API.Application.Controllers
+namespace gamehub_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

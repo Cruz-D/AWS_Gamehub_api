@@ -24,7 +24,6 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
 
             var user = new Users
             {
-                id = _idGenerator.GenerateId(),
                 userId = _idGenerator.GenerateId(),
                 systemInfo = new SystemInfo
                 {
@@ -43,17 +42,17 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
                 verification = new Verification
                 {
                     isVerified = false,
-                    verifiedDate = null
+                    verifiedDate = "verifiedDate"
                 },
                 authentication = new Authentication
                 {
                     isAuthenticated = false,
                     isLoggedIn = false,
                     isBanned = false,
-                    refreshToken = null,
-                    accessToken = null,
-                    tokenExpiry = null,
-                    tokenCreatedAt = null
+                    refreshToken = "refreshToken",
+                    accessToken = "accessToken",
+                    tokenExpiry = "tokenExpiry",
+                    tokenCreatedAt = "tokenCreatedAt"
                 },
                 location = new Location
                 {
@@ -63,8 +62,8 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
                 timestamps = new Timestamps
                 {
                     createdAt = DateTime.UtcNow.ToString("o"),
-                    updatedAt = null,
-                    lastLogin = null
+                    updatedAt = "updatedAt",
+                    lastLogin = "lastLogin"
                 }
             };
 
@@ -74,7 +73,6 @@ namespace gamehub_API.Application.UseCases.User.CreateUserUseCase
 
                 return new GetUserDTO
                 {
-                    id = savedUser.id,
                     userId = savedUser.userId,
                     username = user.systemInfo.username,
                     email = user.systemInfo.email,

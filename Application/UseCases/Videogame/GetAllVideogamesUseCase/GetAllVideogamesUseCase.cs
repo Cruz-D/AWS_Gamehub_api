@@ -19,9 +19,7 @@ namespace gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase
 
             // Call the repository to get all videogames
 
-            string sqlCosmosQuery = "SELECT * FROM c";
-
-            var videogames = await _videogameRepository.GetAllVideogamesAsync(sqlCosmosQuery);
+            var videogames = await _videogameRepository.GetAllVideogamesAsync();
 
             // TODO: MAPEAR A DTO
 

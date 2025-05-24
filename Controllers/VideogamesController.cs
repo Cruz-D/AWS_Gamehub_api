@@ -8,7 +8,7 @@ using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
 using gamehub_API.Application.UseCases.Videogame.GetVideogameUseCase;
 using gamehub_API.Infrastructure.Models;
 
-namespace gamehub_API.Application.Controllers
+namespace gamehub_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

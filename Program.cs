@@ -1,8 +1,6 @@
 // ============================================
 // Espacios de nombres necesarios
 // ============================================
-using Azure.Messaging.ServiceBus;
-using gamehub_API.Application.Interfaces;
 using gamehub_API.Application.UseCases.User.CreateUserUseCase;
 using gamehub_API.Application.UseCases.User.DeleteUserUseCase;
 using gamehub_API.Application.UseCases.User.EditUserUseCase;
@@ -10,9 +8,6 @@ using gamehub_API.Application.UseCases.User.UpdatePasswordUseCase;
 using gamehub_API.Application.UseCases.User.ViewUserUseCase;
 using gamehub_API.Application.UseCases.Videogame.GetAllVideogamesUseCase;
 using gamehub_API.Application.UseCases.Videogame.GetVideogameUseCase;
-using gamehub_API.Infrastructure.Repositories;
-using gamehub_API.Infrastructure.Services.ServiceBus;
-using Microsoft.Azure.Cosmos;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.Text;
@@ -22,6 +17,14 @@ using gamehub_API.Application.UseCases.Auth.LogOutUserUseCase;
 using gamehub_API.Application.UseCases.Auth.LoginUserUseCase;
 using gamehub_API.Application.UseCases.Auth.RefreshTokenUserUseCase;
 using gamehub_API.Application.Interfaces.Others;
+using gamehub_API.Application.Interfaces;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
+using gamehub_API.Infrastructure.Repositories;
+using gamehub_API.Application.UseCases.Comments.ReadCommentsUseCase;
+using gamehub_API.Application.UseCases.Comments.CreateCommentUseCase;
+using gamehub_API.Application.UseCases.Comments.DeleteCommentUseCase;
+using gamehub_API.Application.UseCases.Comments.EditCommentUseCase;
 
 namespace gamehub_API
 {
@@ -35,6 +38,13 @@ namespace gamehub_API
             // ============================================
             // CONFIGURACIÓN DE SERVICIOS
             // ============================================
+
+            builder.Services.AddSingleton<IAmazonDynamoDB>(sp =>
+            {
+                var config = sp.GetRequiredService<IConfiguration>();
+                var region = Amazon.RegionEndpoint.EUNorth1.SystemName; // Cambia esto a la región deseada
+                return new AmazonDynamoDBClient(Amazon.RegionEndpoint.GetBySystemName(region));
+            });
 
             // Configuración de autenticación con JWT
             builder.Services.AddAuthentication(options =>
@@ -109,61 +119,53 @@ namespace gamehub_API
                 });
             });
 
-            // Configuración de Azure Service Bus como Singleton
-            string serviceBusConnectionString = builder.Configuration!.GetValue<string>("ServiceBus:ConnectionString")!;
-            builder.Services.AddSingleton(serviceProvider =>
-            {
-                return new ServiceBusClient(serviceBusConnectionString); // Crear instancia de ServiceBusClient
-            });
+           
+            // Registrar el contexto de DynamoDB
+            builder.Services.AddSingleton<IDynamoDBContext, DynamoDBContext>();
 
-            // Configuración de CosmosClient como Singleton
-            builder.Services.AddSingleton(options =>
-            {
-                string endpointUri = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("EndpointUri")!;
-                string primaryKey = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("PrimaryKey")!;
 
-                // Crear una instancia de CosmosClient con las opciones de conexión
-                return new CosmosClient(endpointUri, primaryKey, new CosmosClientOptions
-                {
-                    ConnectionMode = ConnectionMode.Gateway // Usar modo Gateway (HTTP/HTTPS)
-                });
-            });
+
 
             // ============================================
             // REGISTRO DE REPOSITORIOS
             // ============================================
+            builder.Services.AddScoped<IVideogameInterface, VideogameRepository>();
 
-            // Registrar el repositorio de videojuegos
-            builder.Services.AddScoped<IVideogameInterface>(provider =>
-            {
-                var cosmosClient = provider.GetRequiredService<CosmosClient>();
-                string databaseName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("DatabaseName")!;
-                string containerName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("VideogamesContainer")!;
-                var busServices = provider.GetRequiredService<BusServices>();
+            //Registrar el repositorio de videojuegos
+            //builder.Services.AddScoped<IVideogameInterface>(provider =>
+            //{
+            //    var cosmosClient = provider.GetRequiredService<CosmosClient>();
+            //    string databaseName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("DatabaseName")!;
+            //    string containerName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("VideogamesContainer")!;
 
-                return new VideogameRepository(cosmosClient, databaseName, containerName, busServices);
-            });
+            //    return new VideogameRepository(cosmosClient, databaseName, containerName, busServices);
+            //});
 
-            // Registrar el repositorio de usuarios
+            //Registrar el repositorio de videojuegos
+            
+           
+
+            // With this corrected code block:  
             builder.Services.AddScoped<IUserInterface>(provider =>
             {
-                var cosmosClient = provider.GetRequiredService<CosmosClient>();
-                string databaseName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("DatabaseName")!;
-                string containerName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("UserContainer")!;
-                var busServices = provider.GetRequiredService<BusServices>();
-
-                return new UserRepository(cosmosClient, databaseName, containerName, busServices!);
+                var client = provider.GetRequiredService<IAmazonDynamoDB>();
+                var dynamoDBContext = new DynamoDBContext(client);
+                return new UserRepository(dynamoDBContext, client);
             });
-
-            // Registrar el repositorio de usuarios
+             
             builder.Services.AddScoped<IAuthInterface>(provider =>
             {
-                var cosmosClient = provider.GetRequiredService<CosmosClient>();
-                string databaseName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("DatabaseName")!;
-                string containerName = builder.Configuration.GetSection("gamehub-cosmos")!.GetValue<string>("UserContainer")!;
-                var busServices = provider.GetRequiredService<BusServices>();
+                var client = new AmazonDynamoDBClient();
+                var dynamoDBContext = new DynamoDBContext(client);
+                var context = new UserRepository(dynamoDBContext, client);          
+                return new AuthRepository(dynamoDBContext, client);
+            });
 
-                return new AuthRepository(cosmosClient, databaseName, containerName);
+            builder.Services.AddScoped<ICommentsInterface>(provider =>
+            {
+                var client = provider.GetRequiredService<IAmazonDynamoDB>();
+                var dynamoDBContext = new DynamoDBContext(client);
+                return new CommentRepository(dynamoDBContext, client);
             });
 
             // ============================================
@@ -171,7 +173,7 @@ namespace gamehub_API
             // ============================================
 
             // Caso de uso para Auth
-           
+
             // Casos de uso para videojuegos
             builder.Services.AddScoped<IGetAllVideogamesUseCase, GetAllVideogamesUseCase>();
             builder.Services.AddScoped<IGetVideogameUseCase, GetVideogameUseCase>();
@@ -189,12 +191,16 @@ namespace gamehub_API
             builder.Services.AddScoped<IUpdatePasswordUserUseCase, UpdatePasswordUserUseCase>();
             builder.Services.AddScoped<IDeleteUserUseCase, DeleteUserUseCase>();
 
+            // Casos de uso para los comentarios
+            builder.Services.AddScoped<IReadCommentUseCase, ReadCommentUseCase>();
+            builder.Services.AddScoped<ICreateCommentUseCase, CreateCommentUseCase>();
+            builder.Services.AddScoped<IEditCommentUseCase, EditCommentUseCase>();
+            builder.Services.AddScoped<IDeleteCommentUseCase, DeleteCommentUseCase>();
+
             // ============================================
             // REGISTRO DE SERVICIOS
             // ============================================
 
-            builder.Services.AddScoped<BusServices>();
-            builder.Services.AddScoped<IBusInterface, BusServices>();
             builder.Services.AddScoped<IPasswordHasher, PasswordHasher>();
             builder.Services.AddScoped<IIdGenerator, IdGenerator>();
             builder.Services.AddScoped<IJwtInterface, JwtService>();

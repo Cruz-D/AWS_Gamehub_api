@@ -18,7 +18,7 @@ public class JwtService : IJwtInterface
     }
 
     // Método para generar un token de acceso (JWT).
-    public string GenerateToken(string userId, string username, string email, string tokenType)
+    public string GenerateToken(string userId, string username, string email)
     {
         // Definir los claims (información del usuario) que se incluirán en el token.
         var claims = new[]

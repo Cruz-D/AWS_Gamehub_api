@@ -30,7 +30,7 @@ namespace gamehub_API.Application.UseCases.User.EditUserUseCase
                 }
 
                 // Actualizar los campos del modelo existente con los valores del DTO
-                existingUser.id = string.IsNullOrEmpty(updateUserDTO.id) ? existingUser.id : updateUserDTO.id;
+                //existingUser.id = string.IsNullOrEmpty(updateUserDTO.id) ? existingUser.id : updateUserDTO.id;
                 existingUser.userId = string.IsNullOrEmpty(updateUserDTO.userId) ? existingUser.userId : updateUserDTO.userId;
                 existingUser.systemInfo.email = string.IsNullOrEmpty(updateUserDTO.email) ? existingUser.systemInfo.email : updateUserDTO.email;
                 existingUser.personalInfo.firstName = string.IsNullOrEmpty(updateUserDTO.firstName) ? existingUser.personalInfo.firstName : updateUserDTO.firstName;
@@ -44,7 +44,7 @@ namespace gamehub_API.Application.UseCases.User.EditUserUseCase
                 // Mapear el modelo actualizado al DTO de salida
                 var userDto = new GetUserDTO
                 {
-                    id = updatedUser.id,
+                    //id = updatedUser.id,
                     userId = updatedUser.userId,
                     username = updatedUser.systemInfo.username,
                     email = updatedUser.systemInfo.email,

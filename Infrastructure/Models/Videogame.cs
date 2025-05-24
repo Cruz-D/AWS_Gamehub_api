@@ -1,37 +1,38 @@
-﻿using Newtonsoft.Json;
+﻿using Amazon.DynamoDBv2.DataModel;
 using System.ComponentModel.DataAnnotations;
 
 namespace gamehub_API.Infrastructure.Models
 {
+    [DynamoDBTable("Videogames")]
     public class Videogame
     {
-        [JsonProperty(PropertyName = "id")]
-        public string? Id { get; set; } // Cambiado a string para coincidir con el JSON
-
-        [JsonProperty(PropertyName = "title")]
-        public string? Title { get; set; }
-
-        [JsonProperty(PropertyName = "genre")]
+        [DynamoDBHashKey] // Partition Key
+        [DynamoDBProperty("genre")]
         public string? Genre { get; set; }
 
-        [JsonProperty(PropertyName = "platform")]
+        [DynamoDBProperty("id")]
+        [DynamoDBGlobalSecondaryIndexHashKey("Id-index")] // Secondary Index for querying by Id
+        public string? Id { get; set; }
+
+        [DynamoDBProperty("title")]
+        public string? Title { get; set; }
+
+        [DynamoDBProperty("platform")]
         public string? Platform { get; set; }
 
-        [JsonProperty(PropertyName = "rating")]
-        public string? Rating { get; set; } // Cambiado a string para coincidir con el JSON
+        [DynamoDBProperty("rating")]
+        public string? Rating { get; set; }
 
-        [JsonProperty(PropertyName = "publisher")]
+        [DynamoDBProperty("publisher")]
         public string? Publisher { get; set; }
 
-        [JsonProperty(PropertyName = "release")]
-        public DateTime ReleaseDate { get; set; } // Cambiado el nombre de la propiedad para coincidir con el JSON
+        [DynamoDBProperty("release")]
+        public string ReleaseDate { get; set; }
 
-        [JsonProperty(PropertyName = "status")]
+        [DynamoDBProperty("status")]
         public string? Status { get; set; }
 
-        [JsonProperty(PropertyName = "image")]
+        [DynamoDBProperty("image")]
         public string? Image { get; set; }
-
-
     }
 }

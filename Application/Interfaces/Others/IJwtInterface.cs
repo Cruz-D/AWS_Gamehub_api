@@ -2,7 +2,7 @@
 {
     public interface IJwtInterface
     {
-        string GenerateToken(string userId, string username, string role, string? tokenType);
+        string GenerateToken(string userId, string username, string email);
 
         string GenerateRefreshToken();
 

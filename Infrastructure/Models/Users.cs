@@ -1,127 +1,118 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
+﻿using Amazon.DynamoDBv2.DataModel;
 
-//Estructura de la tabla de CosmosDb
+// Estructura de la tabla de DynamoDB
+[DynamoDBTable("Users")] // Correct attribute for specifying the table name
 public class Users
 {
-
     //==================================================
 
-    [Key]
-    [JsonPropertyName("id")]
-    public string? id { get; set; }
-
-    [JsonPropertyName("userId")]
+    [DynamoDBHashKey] // Clave primaria (Partition Key)
+    [DynamoDBProperty("userId")]
     public string? userId { get; set; }
 
     //==================================================
 
-    [JsonPropertyName("SystemInfo")]
-    public SystemInfo? systemInfo { get; set; } 
+    [DynamoDBProperty("systemInfo")]
+    public SystemInfo? systemInfo { get; set; }
 
-    [JsonPropertyName("personalInfo")]
+    [DynamoDBProperty("personalInfo")]
     public PersonalInfo? personalInfo { get; set; }
 
-    [JsonPropertyName("verification")]
+    [DynamoDBProperty("verification")]
     public Verification? verification { get; set; }
 
-    [JsonPropertyName("authentication")]
+    [DynamoDBProperty("authentication")]
     public Authentication? authentication { get; set; }
 
-    [JsonPropertyName("location")]
+    [DynamoDBProperty("location")]
     public Location? location { get; set; }
 
-    [JsonPropertyName("timestamps")]
+    [DynamoDBProperty("timestamps")]
     public Timestamps? timestamps { get; set; }
 
     //==================================================
-
 }
 
 public class SystemInfo
 {
-    
-    [JsonPropertyName("username")]
+    [DynamoDBProperty("username")]
     public string? username { get; set; }
 
-    [JsonPropertyName("password")]
+    [DynamoDBProperty("password")]
     public string? password { get; set; }
 
-    [JsonPropertyName("email")]
+    [DynamoDBProperty("email")]
     public string? email { get; set; }
 
-    [JsonPropertyName("role")]
+    [DynamoDBProperty("role")]
     public string? role { get; set; }
 }
 
-
 public class PersonalInfo
 {
-    [JsonPropertyName("firstName")]
+    [DynamoDBProperty("firstName")]
     public string? firstName { get; set; }
 
-    [JsonPropertyName("lastName")]
+    [DynamoDBProperty("lastName")]
     public string? lastName { get; set; }
 
-    [JsonPropertyName("dateOfBirth")]
+    [DynamoDBProperty("dateOfBirth")]
     public string? dateOfBirth { get; set; }
 
-    [JsonPropertyName("profilePictureUrl")]
+    [DynamoDBProperty("profilePictureUrl")]
     public string? profilePictureUrl { get; set; }
 }
 
 public class Verification
 {
-    [JsonPropertyName("isVerified")]
+    [DynamoDBProperty("isVerified")]
     public bool? isVerified { get; set; }
 
-    [JsonPropertyName("verifiedDate")]
+    [DynamoDBProperty("verifiedDate")]
     public string? verifiedDate { get; set; }
 }
 
 public class Authentication
 {
-    [JsonPropertyName("isAuthenticated")]
+    [DynamoDBProperty("isAuthenticated")]
     public bool? isAuthenticated { get; set; }
 
-    [JsonPropertyName("isLoggedIn")]
+    [DynamoDBProperty("isLoggedIn")]
     public bool? isLoggedIn { get; set; }
 
-    [JsonPropertyName("isBanned")]
+    [DynamoDBProperty("isBanned")]
     public bool? isBanned { get; set; }
 
-    [JsonPropertyName("refreshToken")]
+    [DynamoDBProperty("refreshToken")]
     public string? refreshToken { get; set; }
 
-    [JsonPropertyName("accessToken")]
+    [DynamoDBProperty("accessToken")]
     public string? accessToken { get; set; }
 
-    [JsonPropertyName("tokenExpiry")]
+    [DynamoDBProperty("tokenExpiry")]
     public string? tokenExpiry { get; set; }
 
-    [JsonPropertyName("tokenCreatedAt")]
+    [DynamoDBProperty("tokenCreatedAt")]
     public string? tokenCreatedAt { get; set; }
 }
 
 public class Location
 {
-    [JsonPropertyName("country")]
+    [DynamoDBProperty("country")]
     public string? country { get; set; }
 
-    [JsonPropertyName("city")]
+    [DynamoDBProperty("city")]
     public string? city { get; set; }
 }
 
 public class Timestamps
 {
-    [JsonPropertyName("createdAt")]
+    [DynamoDBProperty("createdAt")]
     public string? createdAt { get; set; }
 
-    [JsonPropertyName("updatedAt")]
+    [DynamoDBProperty("updatedAt")]
     public string? updatedAt { get; set; }
 
-    [JsonPropertyName("lastLogin")]
+    [DynamoDBProperty("lastLogin")]
     public string? lastLogin { get; set; }
 }
-
-

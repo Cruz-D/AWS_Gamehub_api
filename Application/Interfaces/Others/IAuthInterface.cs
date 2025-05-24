@@ -2,7 +2,7 @@
 {
     public interface IAuthInterface
     {
-        Task<Users> LoginUserAsync(string username, string password);
+        Task<Users> GetUserByUsernameOrEmailAsync(string username);
 
     }
 }

@@ -18,7 +18,6 @@ namespace gamehub_API.Application.UseCases.User.ViewUserUseCase
 
             return new GetUserDTO
             {
-                id = getUser.id,
                 username = getUser.systemInfo.username,
                 email = getUser.systemInfo.email,
                 firstName = getUser.personalInfo.firstName,

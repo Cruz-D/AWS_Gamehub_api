@@ -34,7 +34,7 @@ namespace gamehub_API.Application.UseCases.Auth.RefreshTokenUserUseCase
             }
 
             // Generar un nuevo access token
-            var newAccessToken = _jwtInterface.GenerateToken(user.userId, user.systemInfo.username, user.systemInfo.role, "access");
+            var newAccessToken = _jwtInterface.GenerateToken(user.userId, user.systemInfo.username, user.systemInfo.role);
 
             // Actualizar el usuario con el nuevo access token
             user.authentication.accessToken = newAccessToken;

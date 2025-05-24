@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Authorization;
 using gamehub_API.Application.UseCases.Auth.LogOutUserUseCase;
 using gamehub_API.Application.UseCases.Auth.LoginUserUseCase;
 
-namespace gamehub_API.Application.Controllers
+namespace gamehub_API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -45,7 +45,7 @@ namespace gamehub_API.Application.Controllers
             try
             {
                 var user = await _viewUserUseCase.ExecuteAsync(userId);
-               
+
                 return Ok(user);
             }
             catch (Exception ex)

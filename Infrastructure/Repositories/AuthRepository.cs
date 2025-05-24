@@ -1,46 +1,79 @@
-﻿using gamehub_API.Application.Interfaces.Others;
-using Microsoft.Azure.Cosmos;
+﻿using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DataModel;
+using Amazon.DynamoDBv2.Model;
+
+using gamehub_API.Application.Interfaces.Others;
+using Microsoft.IdentityModel.Tokens;
 
 namespace gamehub_API.Infrastructure.Repositories
 {
     public class AuthRepository : IAuthInterface
     {
-        private readonly Container _container;
+        private readonly IDynamoDBContext _context;
+        private readonly IAmazonDynamoDB _dynamoDBClient;
 
-        public AuthRepository(CosmosClient cosmosClient, string databaseName, string containerName)
+        public AuthRepository(IDynamoDBContext context, IAmazonDynamoDB dynamoDBClient)
         {
-            _container = cosmosClient.GetContainer(databaseName, containerName);
+            _context = context;
+            _dynamoDBClient = dynamoDBClient;
         }
 
-        public async Task<Users> LoginUserAsync(string username, string password)
+        public async Task<Users> GetUserByUsernameOrEmailAsync(string usernameOrEmail)
         {
             try
             {
-                // Buscar al usuario por nombre de usuario o correo electrónico
-                var query = new QueryDefinition(
-                    "SELECT * FROM c WHERE c.systemInfo.username = @value OR c.systemInfo.email = @value")
-                    .WithParameter("@value", username);
-
-                var iterator = _container.GetItemQueryIterator<Users>(query);
-
-                var response = await iterator.ReadNextAsync();
-
-                var foundUser = response.FirstOrDefault();
-                if (foundUser == null)
+                var scanRequest = new ScanRequest
                 {
-                    throw new Exception("Usuario no encontrado.");
+                    TableName = "Users",
+                    FilterExpression = "systemInfo.username = :usernameOrEmail OR systemInfo.email = :usernameOrEmail",
+                    ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+            {
+                { ":usernameOrEmail", new AttributeValue { S = usernameOrEmail } }
+            }
+                };
+
+                var response = await _dynamoDBClient.ScanAsync(scanRequest);
+
+                if (response.Items != null && response.Items.Count > 0)
+                {
+                    return MapUser(response.Items[0]);
                 }
 
-                return foundUser;
+                throw new KeyNotFoundException("Usuario no encontrado.");
             }
-            catch (CosmosException ex) when (ex.StatusCode == System.Net.HttpStatusCode.NotFound)
+            catch (Exception ex)
             {
-                throw new Exception($"No se encontró el usuario identificado {username}.", ex);
+                Console.WriteLine($"Error ejecutando el escaneo: {ex.Message}");
+                throw new Exception("Error al obtener el usuario.", ex);
             }
-            catch (CosmosException ex)
+        }
+
+
+
+        private Users MapUser(Dictionary<string, AttributeValue> item)
+        {
+            return new Users
             {
-                throw new Exception($"Error en Cosmos DB: {ex.Message}", ex);
-            }
+                userId = item["userId"].S,
+                systemInfo = new SystemInfo
+                {
+                    username = item["systemInfo"].M["username"].S,
+                    email = item["systemInfo"].M["email"].S,
+                    password = item["systemInfo"].M["password"].S
+                },
+                authentication = new Authentication
+                {
+                    isAuthenticated = item["authentication"].M["isAuthenticated"].BOOL,
+                    refreshToken = item["authentication"].M["refreshToken"].S,
+                    accessToken = item["authentication"].M["accessToken"].S,
+                    tokenExpiry = item["authentication"].M["tokenExpiry"].S,
+                    tokenCreatedAt = item["authentication"].M["tokenCreatedAt"].S
+                },
+                timestamps = new Timestamps
+                {
+                    lastLogin = item["timestamps"].M["lastLogin"].S
+                }
+            };
         }
     }
 
